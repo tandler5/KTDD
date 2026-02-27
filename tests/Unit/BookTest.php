@@ -10,7 +10,7 @@ class BookTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function it_can_create_a_book()
     {
         $book = Book::create([
