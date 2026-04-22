@@ -19,7 +19,7 @@ global.route = vi.fn(() => '');
 
 describe('UserShow.vue Rental History', () => {
     it('shows Status as a separate column in history table', () => {
-        const user = { id: 1, name: 'John Doe', email: 'john@example.com', active_rentals: [] };
+        const user = { id: 1, name: 'John Doe', email: 'john@example.com', role: 'customer', active_rentals: [] };
         const rentals = {
             data: [
                 { id: 1, book_id: 1, book_title: 'Book 1', rented_at: '2023-01-01', returned_at: '2023-01-10' },
@@ -41,6 +41,13 @@ describe('UserShow.vue Rental History', () => {
                 },
                 mocks: {
                     route: vi.fn(() => ''),
+                    $page: {
+                        props: {
+                            auth: {
+                                user: { role: 'customer' }
+                            }
+                        }
+                    }
                 }
             }
         });
@@ -56,5 +63,69 @@ describe('UserShow.vue Rental History', () => {
 
         // Check second row (Active)
         expect(rows[1].text()).toContain('Active');
+    });
+
+    it('shows role management for administrators', () => {
+        const user = { id: 1, name: 'John Doe', email: 'john@example.com', role: 'customer', active_rentals: [] };
+        const rentals = { data: [], links: [] };
+        const filters = {};
+
+        const wrapper = mount(UserShow, {
+            props: { user, rentals, filters },
+            global: {
+                stubs: {
+                    AuthenticatedLayout: {
+                        template: '<div><slot name="header"></slot><slot></slot></div>',
+                    },
+                    Pagination: true,
+                    TextInput: true,
+                },
+                mocks: {
+                    route: vi.fn(() => ''),
+                    $page: {
+                        props: {
+                            auth: {
+                                user: { role: 'administrator' }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        expect(wrapper.find('[data-testid="role-select"]').exists()).toBe(true);
+        expect(wrapper.find('[data-testid="role-select"]').element.value).toBe('customer');
+    });
+
+    it('hides role management for customers', () => {
+        const user = { id: 1, name: 'John Doe', email: 'john@example.com', role: 'customer', active_rentals: [] };
+        const rentals = { data: [], links: [] };
+        const filters = {};
+
+        const wrapper = mount(UserShow, {
+            props: { user, rentals, filters },
+            global: {
+                stubs: {
+                    AuthenticatedLayout: {
+                        template: '<div><slot name="header"></slot><slot></slot></div>',
+                    },
+                    Pagination: true,
+                    TextInput: true,
+                },
+                mocks: {
+                    route: vi.fn(() => ''),
+                    $page: {
+                        props: {
+                            auth: {
+                                user: { role: 'customer' }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        expect(wrapper.find('[data-testid="role-select"]').exists()).toBe(false);
+        expect(wrapper.text()).toContain('customer');
     });
 });

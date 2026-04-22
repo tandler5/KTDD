@@ -2,7 +2,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Pagination from '@/Components/Pagination.vue';
 import TextInput from '@/Components/TextInput.vue';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
 import debounce from 'lodash/debounce';
 
@@ -19,6 +19,16 @@ const returned_from = ref(props.filters.returned_from || '');
 const returned_to = ref(props.filters.returned_to || '');
 const per_page = ref(props.filters.per_page || 10);
 const loading = ref(false);
+
+const roleForm = useForm({
+    role: props.user.role,
+});
+
+const updateRole = () => {
+    roleForm.patch(route('users.update-role', props.user.id), {
+        preserveScroll: true,
+    });
+};
 
 const formatDate = (date) => {
     if (!date) return '-';
@@ -72,6 +82,27 @@ watch([search_book, rented_from, rented_to, returned_from, returned_to, per_page
                             <div>
                                 <span class="text-xs uppercase text-gray-400 font-bold block">Email</span>
                                 <p class="text-gray-600">{{ user.email }}</p>
+                            </div>
+                            <div class="pt-2 border-t mt-4">
+                                <span class="text-xs uppercase text-gray-400 font-bold block mb-1">Role Management</span>
+                                <div v-if="$page.props.auth.user.role === 'administrator'" class="flex items-center space-x-2">
+                                    <select
+                                        data-testid="role-select"
+                                        v-model="roleForm.role"
+                                        @change="updateRole"
+                                        :disabled="roleForm.processing"
+                                        class="text-sm border-gray-300 rounded shadow-sm focus:border-indigo-500 focus:ring-indigo-500 py-1"
+                                    >
+                                        <option value="customer">Customer</option>
+                                        <option value="administrator">Administrator</option>
+                                    </select>
+                                    <span v-if="roleForm.recentlySuccessful" class="text-xs text-green-600 font-bold">Saved!</span>
+                                </div>
+                                <div v-else>
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-700">
+                                        {{ user.role }}
+                                    </span>
+                                </div>
                             </div>
                         </div>
 

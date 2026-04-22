@@ -79,6 +79,7 @@ class UserController extends Controller
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
+                'role' => $user->role,
                 'active_rentals' => $user->activeRentals->map(fn ($rental) => [
                     'id' => $rental->id,
                     'book_title' => $rental->book->title,
@@ -89,5 +90,20 @@ class UserController extends Controller
             'rentals' => $rentals,
             'filters' => $request->only(['search_book', 'rented_from', 'rented_to', 'returned_from', 'returned_to', 'per_page']),
         ]);
+    }
+
+    public function updateRole(User $user, Request $request)
+    {
+        if (!auth()->user()->isAdmin()) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'role' => 'required|string|in:customer,administrator',
+        ]);
+
+        $user->update($validated);
+
+        return back()->with('success', 'User role updated successfully');
     }
 }

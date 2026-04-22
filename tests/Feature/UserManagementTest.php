@@ -56,6 +56,38 @@ class UserManagementTest extends TestCase
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
+    public function administrator_can_update_user_role()
+    {
+        $admin = User::factory()->create(['role' => 'administrator']);
+        $user = User::factory()->create(['role' => 'customer']);
+
+        $this->actingAs($admin);
+
+        $response = $this->patch(route('users.update-role', $user), [
+            'role' => 'administrator'
+        ]);
+
+        $response->assertRedirect();
+        $this->assertEquals('administrator', $user->fresh()->role);
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function customer_cannot_update_user_role()
+    {
+        $user1 = User::factory()->create(['role' => 'customer']);
+        $user2 = User::factory()->create(['role' => 'customer']);
+
+        $this->actingAs($user1);
+
+        $response = $this->patch(route('users.update-role', $user2), [
+            'role' => 'administrator'
+        ]);
+
+        $response->assertStatus(403);
+        $this->assertEquals('customer', $user2->fresh()->role);
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
     public function it_can_show_user_details_with_rental_history()
     {
         $admin = User::factory()->create();

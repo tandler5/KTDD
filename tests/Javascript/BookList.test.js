@@ -12,6 +12,10 @@ vi.mock('@inertiajs/vue3', async () => {
             book_id: null,
             post: vi.fn(),
         }),
+        router: {
+            get: vi.fn(),
+            on: vi.fn(),
+        },
     };
 });
 
@@ -24,17 +28,24 @@ const AuthenticatedLayoutStub = {
 };
 
 describe('BookList.vue', () => {
+    const filters = { search_title: '', search_author: '', search_isbn: '', search_status: '', per_page: 10 };
+
     it('renders a list of books', () => {
-        const books = [
-            { id: 1, title: 'Book 1', author: 'Author 1', is_available: true },
-            { id: 2, title: 'Book 2', author: 'Author 2', is_available: false },
-        ];
+        const books = {
+            data: [
+                { id: 1, title: 'Book 1', author: 'Author 1', is_available: true },
+                { id: 2, title: 'Book 2', author: 'Author 2', is_available: false },
+            ],
+            links: [], from: 1, to: 2, total: 2
+        };
         const wrapper = mount(BookList, {
-            props: { books },
+            props: { books, filters },
             global: {
                 stubs: {
                     AuthenticatedLayout: AuthenticatedLayoutStub,
                     Link: { template: '<a><slot /></a>' },
+                    TextInput: true,
+                    Pagination: true,
                 },
                 mocks: {
                     route: () => '',
@@ -47,16 +58,21 @@ describe('BookList.vue', () => {
     });
 
     it('shows rent button only if book is available', () => {
-        const books = [
-            { id: 1, title: 'Available Book', author: 'Author', is_available: true },
-            { id: 2, title: 'Rented Book', author: 'Author', is_available: false },
-        ];
+        const books = {
+            data: [
+                { id: 1, title: 'Available Book', author: 'Author', is_available: true },
+                { id: 2, title: 'Rented Book', author: 'Author', is_available: false },
+            ],
+            links: [], from: 1, to: 2, total: 2
+        };
         const wrapper = mount(BookList, {
-            props: { books },
+            props: { books, filters },
             global: {
                 stubs: {
                     AuthenticatedLayout: AuthenticatedLayoutStub,
                     Link: { template: '<a><slot /></a>' },
+                    TextInput: true,
+                    Pagination: true,
                 },
                 mocks: {
                     route: () => '',
