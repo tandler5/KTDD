@@ -13,22 +13,31 @@ const props = defineProps({
 
 const search_book = ref(props.filters.search_book || '');
 const search_user = ref(props.filters.search_user || '');
-const search_rented = ref(props.filters.search_rented || '');
-const search_due = ref(props.filters.search_due || '');
+const rented_from = ref(props.filters.rented_from || '');
+const rented_to = ref(props.filters.rented_to || '');
+const due_from = ref(props.filters.due_from || '');
+const due_to = ref(props.filters.due_to || '');
 const search_status = ref(props.filters.search_status || '');
 const per_page = ref(props.filters.per_page || 10);
+
+const loading = ref(false);
 
 const formatDate = (date) => {
     if (!date) return '-';
     return new Date(date).toLocaleDateString();
 };
 
-watch([search_book, search_user, search_rented, search_due, search_status, per_page], debounce(() => {
+router.on('start', () => (loading.value = true));
+router.on('finish', () => (loading.value = false));
+
+watch([search_book, search_user, rented_from, rented_to, due_from, due_to, search_status, per_page], debounce(() => {
     router.get(route('rentals.index'), {
         search_book: search_book.value,
         search_user: search_user.value,
-        search_rented: search_rented.value,
-        search_due: search_due.value,
+        rented_from: rented_from.value,
+        rented_to: rented_to.value,
+        due_from: due_from.value,
+        due_to: due_to.value,
         search_status: search_status.value,
         per_page: per_page.value
     }, {
@@ -76,18 +85,32 @@ watch([search_book, search_user, search_rented, search_due, search_status, per_p
                                             />
                                         </th>
                                         <th class="px-4 py-2">
-                                            <input
-                                                type="date"
-                                                v-model="search_rented"
-                                                class="w-full text-xs border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-2 py-1"
-                                            />
+                                            <div class="flex flex-col space-y-1">
+                                                <input
+                                                    type="date"
+                                                    v-model="rented_from"
+                                                    class="w-full text-[10px] border-gray-300 rounded shadow-sm p-1"
+                                                />
+                                                <input
+                                                    type="date"
+                                                    v-model="rented_to"
+                                                    class="w-full text-[10px] border-gray-300 rounded shadow-sm p-1"
+                                                />
+                                            </div>
                                         </th>
                                         <th class="px-4 py-2">
-                                            <input
-                                                type="date"
-                                                v-model="search_due"
-                                                class="w-full text-xs border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-2 py-1"
-                                            />
+                                            <div class="flex flex-col space-y-1">
+                                                <input
+                                                    type="date"
+                                                    v-model="due_from"
+                                                    class="w-full text-[10px] border-gray-300 rounded shadow-sm p-1"
+                                                />
+                                                <input
+                                                    type="date"
+                                                    v-model="due_to"
+                                                    class="w-full text-[10px] border-gray-300 rounded shadow-sm p-1"
+                                                />
+                                            </div>
                                         </th>
                                         <th class="px-4 py-2">
                                             <select
@@ -102,8 +125,11 @@ watch([search_book, search_user, search_rented, search_due, search_status, per_p
                                         </th>
                                     </tr>
                                 </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
-                                    <tr v-for="rental in rentals.data" :key="rental.id" class="hover:bg-gray-50 transition">
+                                <tbody class="bg-white divide-y divide-gray-200 relative">
+                                    <div v-if="loading" class="absolute inset-0 bg-white bg-opacity-50 flex items-center justify-center z-10">
+                                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                                    </div>
+                                    <tr v-for="rental in rentals.data" :key="rental.id" class="hover:bg-gray-50 transition" :class="{'opacity-50': loading}">
                                         <td class="px-6 py-4 whitespace-nowrap font-medium text-sm">{{ rental.book_title }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm">{{ rental.user_name }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatDate(rental.rented_at) }}</td>

@@ -60,5 +60,19 @@ class RentalFilterTest extends TestCase
             ->has('rentals.data', 1)
             ->where('rentals.data.0.book_title', 'Book B')
         );
+
+        // Filter by date range (rented_from/to)
+        $response = $this->get(route('rentals.index', ['rented_from' => '2023-01-15', 'rented_to' => '2023-02-15']));
+        $response->assertInertia(fn (Assert $page) => $page
+            ->has('rentals.data', 1)
+            ->where('rentals.data.0.book_title', 'Book B')
+        );
+
+        // Filter by due date range (due_from/to)
+        $response = $this->get(route('rentals.index', ['due_from' => '2023-01-01', 'due_to' => '2023-01-20']));
+        $response->assertInertia(fn (Assert $page) => $page
+            ->has('rentals.data', 1)
+            ->where('rentals.data.0.book_title', 'Book A')
+        );
     }
 }

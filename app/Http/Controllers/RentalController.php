@@ -37,8 +37,20 @@ class RentalController extends Controller
             ->when($request->input('search_rented'), function ($query, $date) {
                 $query->whereDate('rented_at', $date);
             })
+            ->when($request->input('rented_from'), function ($query, $date) {
+                $query->whereDate('rented_at', '>=', $date);
+            })
+            ->when($request->input('rented_to'), function ($query, $date) {
+                $query->whereDate('rented_at', '<=', $date);
+            })
             ->when($request->input('search_due'), function ($query, $date) {
                 $query->whereDate('due_date', $date);
+            })
+            ->when($request->input('due_from'), function ($query, $date) {
+                $query->whereDate('due_date', '>=', $date);
+            })
+            ->when($request->input('due_to'), function ($query, $date) {
+                $query->whereDate('due_date', '<=', $date);
             })
             ->when($request->input('search_status'), function ($query, $status) {
                 if ($status === 'active') {
@@ -64,7 +76,7 @@ class RentalController extends Controller
 
         return Inertia::render('Rentals/Index', [
             'rentals' => $rentals,
-            'filters' => $request->only(['search_book', 'search_user', 'search_rented', 'search_due', 'search_status', 'per_page']),
+            'filters' => $request->only(['search_book', 'search_user', 'search_rented', 'rented_from', 'rented_to', 'search_due', 'due_from', 'due_to', 'search_status', 'per_page']),
         ]);
     }
 
