@@ -22,18 +22,32 @@ class RentalController extends Controller
     {
         $validated = $request->validate([
             'book_id' => 'required|integer|exists:books,id',
-            'user_id' => 'required|integer|exists:users,id',
+            'user_id' => 'sometimes|integer|exists:users,id',
         ]);
 
         try {
-            $user = User::findOrFail($validated['user_id']);
+            $user = isset($validated['user_id'])
+                ? User::findOrFail($validated['user_id'])
+                : auth()->user();
+
+            if (!$user) {
+                throw new Exception('User not authenticated');
+            }
             $book = Book::findOrFail($validated['book_id']);
 
             $rental = $this->rentalService->rentBook($user, $book);
 
-            return response()->json($rental, 201);
+            if ($request->wantsJson()) {
+                return response()->json($rental, 201);
+            }
+
+            return back()->with('success', 'Book rented successfully');
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 422);
+            if ($request->wantsJson()) {
+                return response()->json(['message' => $e->getMessage()], 422);
+            }
+
+            return back()->withErrors(['message' => $e->getMessage()]);
         }
     }
 
