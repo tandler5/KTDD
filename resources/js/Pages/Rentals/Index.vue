@@ -142,8 +142,16 @@ watch([search_book, search_user, rented_from, rented_to, due_from, due_to, searc
                                         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                                     </div>
                                     <tr v-for="rental in rentals.data" :key="rental.id" class="hover:bg-gray-50 transition" :class="{'opacity-50': loading}">
-                                        <td class="px-6 py-4 whitespace-nowrap font-medium text-sm">{{ rental.book_title }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm">{{ rental.user_name }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <Link :href="route('books.show', rental.book_id)" class="text-sm font-medium text-blue-600 hover:underline">
+                                                {{ rental.book_title }}
+                                            </Link>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <Link :href="route('users.show', rental.user_id)" class="text-sm text-blue-600 hover:underline">
+                                                {{ rental.user_name }}
+                                            </Link>
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatDate(rental.rented_at) }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm" :class="{'text-red-600 font-bold': rental.is_overdue}">
                                             {{ formatDate(rental.due_date) }}

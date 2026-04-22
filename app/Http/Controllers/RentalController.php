@@ -66,6 +66,8 @@ class RentalController extends Controller
             ->withQueryString()
             ->through(fn ($rental) => [
                 'id' => $rental->id,
+                'book_id' => $rental->book_id,
+                'user_id' => $rental->user_id,
                 'book_title' => $rental->book->title,
                 'user_name' => $rental->user->name,
                 'rented_at' => $rental->rented_at,
