@@ -109,5 +109,16 @@ class DetailPaginationTest extends TestCase
             'per_page' => 50,
         ]));
         $response->assertInertia(fn (Assert $page) => $page->has('rentals.data', 15));
+
+        // Test returned date range filtering
+        Rental::query()->update(['returned_at' => null]);
+        Rental::query()->where('book_id', $book2->id)->update(['returned_at' => now()->subHours(1)]);
+
+        $response = $this->get(route('users.show', [
+            $user->id,
+            'returned_from' => now()->subDay()->toDateString(),
+            'returned_to' => now()->addDay()->toDateString(),
+        ]));
+        $response->assertInertia(fn (Assert $page) => $page->has('rentals.data', 10));
     }
 }
