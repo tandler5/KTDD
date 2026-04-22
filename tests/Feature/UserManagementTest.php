@@ -16,7 +16,7 @@ class UserManagementTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function it_can_list_and_filter_users()
     {
-        $admin = User::factory()->create(['name' => 'Admin']);
+        $admin = User::factory()->create(['name' => 'Admin', 'role' => 'administrator']);
         User::factory()->create(['name' => 'John Doe', 'email' => 'john@example.com']);
         User::factory()->create(['name' => 'Jane Smith', 'email' => 'jane@example.com']);
 
@@ -90,7 +90,7 @@ class UserManagementTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function it_can_show_user_details_with_rental_history()
     {
-        $admin = User::factory()->create();
+        $admin = User::factory()->create(['role' => 'administrator']);
         $user = User::factory()->create(['name' => 'Library Member']);
         $book = Book::factory()->create(['title' => 'Test Book']);
 

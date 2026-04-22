@@ -10,6 +10,7 @@ const props = defineProps({
     book: Object,
     rentals: Object,
     filters: Object,
+    canViewRentalHistory: Boolean,
 });
 
 const search_user = ref(props.filters.search_user || '');
@@ -29,6 +30,10 @@ router.on('start', () => (loading.value = true));
 router.on('finish', () => (loading.value = false));
 
 watch([search_user, rented_from, rented_to, returned_from, returned_to, per_page], debounce(() => {
+    if (!props.canViewRentalHistory) {
+        return;
+    }
+
     router.get(route('books.show', props.book.id), {
         search_user: search_user.value,
         rented_from: rented_from.value,
@@ -76,16 +81,26 @@ watch([search_user, rented_from, rented_to, returned_from, returned_to, per_page
 
                         <div v-if="book.current_rental" class="mt-6 p-4 bg-gray-50 rounded">
                             <h4 class="font-bold text-sm uppercase text-gray-500 mb-2 border-b">Current Borrower</h4>
-                            <Link :href="route('users.show', book.current_rental.user_id || 1)" class="font-semibold text-blue-600 hover:underline block mb-1">
+                            <Link
+                                v-if="canViewRentalHistory"
+                                :href="route('users.show', book.current_rental.user_id)"
+                                class="font-semibold text-blue-600 hover:underline block mb-1"
+                            >
                                 {{ book.current_rental.user_name }}
                             </Link>
+                            <p v-else class="font-semibold text-gray-700 mb-1">
+                                {{ book.current_rental.user_name }}
+                            </p>
                             <p class="text-[10px] text-gray-600">Since: {{ formatDate(book.current_rental.rented_at) }}</p>
                             <p class="text-[10px] text-gray-600 font-semibold">Due: {{ formatDate(book.current_rental.due_date) }}</p>
                         </div>
                     </div>
 
                     <!-- History Card -->
-                    <div class="md:col-span-2 bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                    <div
+                        v-if="canViewRentalHistory"
+                        class="md:col-span-2 bg-white overflow-hidden shadow-sm sm:rounded-lg p-6"
+                    >
                         <h3 class="text-lg font-bold mb-4 border-b pb-2">Rental History</h3>
 
                         <div class="overflow-x-auto relative">

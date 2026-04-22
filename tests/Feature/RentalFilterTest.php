@@ -16,13 +16,14 @@ class RentalFilterTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function it_can_filter_rentals_by_date_and_status()
     {
-        $user = User::factory()->create();
+        $admin = User::factory()->create(['role' => 'administrator']);
+        $borrower = User::factory()->create(['role' => 'customer']);
         $book1 = Book::factory()->create(['title' => 'Book A']);
         $book2 = Book::factory()->create(['title' => 'Book B']);
 
         // Active rental
         Rental::create([
-            'user_id' => $user->id,
+            'user_id' => $borrower->id,
             'book_id' => $book1->id,
             'rented_at' => '2023-01-01 10:00:00',
             'due_date' => '2023-01-15 10:00:00',
@@ -31,14 +32,14 @@ class RentalFilterTest extends TestCase
 
         // Returned rental
         Rental::create([
-            'user_id' => $user->id,
+            'user_id' => $borrower->id,
             'book_id' => $book2->id,
             'rented_at' => '2023-02-01 10:00:00',
             'due_date' => '2023-02-15 10:00:00',
             'returned_at' => '2023-02-10 10:00:00',
         ]);
 
-        $this->actingAs($user);
+        $this->actingAs($admin);
 
         // Filter by rented_at date
         $response = $this->get(route('rentals.index', ['search_rented' => '2023-01-01']));

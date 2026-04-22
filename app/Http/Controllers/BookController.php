@@ -55,35 +55,42 @@ class BookController extends Controller
         $perPage = $request->input('per_page', 10);
         $book->load(['currentRental.user']);
 
-        $rentals = $book->rentals()
-            ->with('user')
-            ->when($request->input('search_user'), function ($query, $search) {
-                $query->whereHas('user', function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%");
-                });
-            })
-            ->when($request->input('rented_from'), function ($query, $date) {
-                $query->whereDate('rented_at', '>=', $date);
-            })
-            ->when($request->input('rented_to'), function ($query, $date) {
-                $query->whereDate('rented_at', '<=', $date);
-            })
-            ->when($request->input('returned_from'), function ($query, $date) {
-                $query->whereDate('returned_at', '>=', $date);
-            })
-            ->when($request->input('returned_to'), function ($query, $date) {
-                $query->whereDate('returned_at', '<=', $date);
-            })
-            ->latest()
-            ->paginate($perPage)
-            ->withQueryString()
-            ->through(fn ($rental) => [
-                'id' => $rental->id,
-                'user_id' => $rental->user_id,
-                'user_name' => $rental->user->name,
-                'rented_at' => $rental->rented_at,
-                'returned_at' => $rental->returned_at,
-            ]);
+        $canViewRentalHistory = $request->user()?->isAdmin() ?? false;
+
+        $rentals = $canViewRentalHistory
+            ? $book->rentals()
+                ->with('user')
+                ->when($request->input('search_user'), function ($query, $search) {
+                    $query->whereHas('user', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    });
+                })
+                ->when($request->input('rented_from'), function ($query, $date) {
+                    $query->whereDate('rented_at', '>=', $date);
+                })
+                ->when($request->input('rented_to'), function ($query, $date) {
+                    $query->whereDate('rented_at', '<=', $date);
+                })
+                ->when($request->input('returned_from'), function ($query, $date) {
+                    $query->whereDate('returned_at', '>=', $date);
+                })
+                ->when($request->input('returned_to'), function ($query, $date) {
+                    $query->whereDate('returned_at', '<=', $date);
+                })
+                ->latest()
+                ->paginate($perPage)
+                ->withQueryString()
+                ->through(fn ($rental) => [
+                    'id' => $rental->id,
+                    'user_id' => $rental->user_id,
+                    'user_name' => $rental->user->name,
+                    'rented_at' => $rental->rented_at,
+                    'returned_at' => $rental->returned_at,
+                ])
+            : [
+                'data' => [],
+                'links' => [],
+            ];
 
         return Inertia::render('Books/Show', [
             'book' => [
@@ -93,13 +100,17 @@ class BookController extends Controller
                 'isbn' => $book->isbn,
                 'is_available' => $book->isAvailable(),
                 'current_rental' => $book->currentRental ? [
+                    'user_id' => $book->currentRental->user_id,
                     'user_name' => $book->currentRental->user->name,
                     'rented_at' => $book->currentRental->rented_at,
                     'due_date' => $book->currentRental->due_date,
                 ] : null,
             ],
             'rentals' => $rentals,
-            'filters' => $request->only(['search_user', 'rented_from', 'rented_to', 'returned_from', 'returned_to', 'per_page']),
+            'canViewRentalHistory' => $canViewRentalHistory,
+            'filters' => $canViewRentalHistory
+                ? $request->only(['search_user', 'rented_from', 'rented_to', 'returned_from', 'returned_to', 'per_page'])
+                : [],
         ]);
     }
 

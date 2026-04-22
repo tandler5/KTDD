@@ -18,11 +18,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/books', [BookController::class, 'store'])->name('books.store');
     Route::get('/books/{book}', [BookController::class, 'show'])->name('books.show');
 
-    Route::get('/users', [UserController::class, 'index'])->name('users.index');
-    Route::get('/users/{user}', [UserController::class, 'show'])->name('users.show');
-    Route::patch('/users/{user}/role', [UserController::class, 'updateRole'])->name('users.update-role');
+    Route::middleware('administrator')->group(function () {
+        Route::get('/users', [UserController::class, 'index'])->name('users.index');
+        Route::get('/users/{user}', [UserController::class, 'show'])->name('users.show');
+        Route::patch('/users/{user}/role', [UserController::class, 'updateRole'])->name('users.update-role');
 
-    Route::get('/rentals', [RentalController::class, 'index'])->name('rentals.index');
+        Route::get('/rentals', [RentalController::class, 'index'])->name('rentals.index');
+    });
+
     Route::post('/rentals', [RentalController::class, 'store'])->name('rentals.store');
     Route::post('/rentals/return', [RentalController::class, 'returnBook'])->name('rentals.return');
 });

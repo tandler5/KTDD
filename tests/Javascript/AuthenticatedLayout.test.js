@@ -23,6 +23,10 @@ vi.mock('@inertiajs/vue3', async () => {
     };
 });
 
+const slotStub = {
+    template: '<div><slot /></div>',
+};
+
 describe('AuthenticatedLayout.vue Navigation', () => {
     beforeEach(() => {
         vi.clearAllMocks();
@@ -97,5 +101,64 @@ describe('AuthenticatedLayout.vue Navigation', () => {
         });
 
         expect(wrapper.text()).toContain('administrator');
+    });
+
+    it('hides Users and Rentals links for customer role', () => {
+        const routeMock = (name) => {
+            if (name) return `http://localhost/${name.replace('.', '/')}`;
+            return { current: () => false };
+        };
+        global.route = routeMock;
+
+        const wrapper = mount(AuthenticatedLayout, {
+            global: {
+                stubs: {
+                    ApplicationLogo: true,
+                    Dropdown: slotStub,
+                    DropdownLink: slotStub,
+                    Toast: true,
+                    ResponsiveNavLink: slotStub,
+                    NavLink: slotStub,
+                },
+                mocks: {
+                    route: routeMock,
+                    $page: mockPage.value,
+                },
+            },
+        });
+
+        expect(wrapper.text()).toContain('Books');
+        expect(wrapper.text()).not.toContain('Users');
+        expect(wrapper.text()).not.toContain('Rentals');
+    });
+
+    it('shows Users and Rentals links for administrator role', () => {
+        mockPage.value.props.auth.user.role = 'administrator';
+
+        const routeMock = (name) => {
+            if (name) return `http://localhost/${name.replace('.', '/')}`;
+            return { current: () => false };
+        };
+        global.route = routeMock;
+
+        const wrapper = mount(AuthenticatedLayout, {
+            global: {
+                stubs: {
+                    ApplicationLogo: true,
+                    Dropdown: slotStub,
+                    DropdownLink: slotStub,
+                    Toast: true,
+                    ResponsiveNavLink: slotStub,
+                    NavLink: slotStub,
+                },
+                mocks: {
+                    route: routeMock,
+                    $page: mockPage.value,
+                },
+            },
+        });
+
+        expect(wrapper.text()).toContain('Users');
+        expect(wrapper.text()).toContain('Rentals');
     });
 });

@@ -11,6 +11,8 @@ import { Link, usePage } from '@inertiajs/vue3';
 const showingNavigationDropdown = ref(false);
 const page = usePage();
 
+const isAdministrator = computed(() => page.props.auth.user.role === 'administrator');
+
 const isBooksActive = computed(() => {
     return route().current('books.*') || page.component.startsWith('Books/') || page.url.startsWith('/books');
 });
@@ -60,12 +62,14 @@ const isRentalsActive = computed(() => {
                                     Books
                                 </NavLink>
                                 <NavLink
+                                    v-if="isAdministrator"
                                     :href="route('users.index')"
                                     :active="isUsersActive"
                                 >
                                     Users
                                 </NavLink>
                                 <NavLink
+                                    v-if="isAdministrator"
                                     :href="route('rentals.index')"
                                     :active="isRentalsActive"
                                 >
@@ -188,12 +192,14 @@ const isRentalsActive = computed(() => {
                             Books
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
+                            v-if="isAdministrator"
                             :href="route('users.index')"
                             :active="isUsersActive"
                         >
                             Users
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
+                            v-if="isAdministrator"
                             :href="route('rentals.index')"
                             :active="isRentalsActive"
                         >

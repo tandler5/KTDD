@@ -16,6 +16,7 @@ class DetailPaginationTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function book_show_page_has_paginated_history()
     {
+        $admin = User::factory()->create(['role' => 'administrator']);
         $user1 = User::factory()->create(['name' => 'Alice']);
         $user2 = User::factory()->create(['name' => 'Bob']);
         $book = Book::factory()->create();
@@ -23,7 +24,7 @@ class DetailPaginationTest extends TestCase
         Rental::factory()->count(5)->create(['book_id' => $book->id, 'user_id' => $user1->id]);
         Rental::factory()->count(10)->create(['book_id' => $book->id, 'user_id' => $user2->id]);
 
-        $this->actingAs($user1);
+        $this->actingAs($admin);
 
         // Test basic pagination
         $response = $this->get(route('books.show', $book->id));
@@ -57,16 +58,35 @@ class DetailPaginationTest extends TestCase
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
+    public function non_admin_cannot_see_book_history_data()
+    {
+        $customer = User::factory()->create(['role' => 'customer']);
+        $borrower = User::factory()->create(['role' => 'customer']);
+        $book = Book::factory()->create();
+
+        Rental::factory()->count(3)->create(['book_id' => $book->id, 'user_id' => $borrower->id]);
+
+        $response = $this->actingAs($customer)->get(route('books.show', $book->id));
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn (Assert $page) => $page
+            ->where('canViewRentalHistory', false)
+            ->has('rentals.data', 0)
+        );
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
     public function user_show_page_has_paginated_history()
     {
-        $user = User::factory()->create();
+        $admin = User::factory()->create(['role' => 'administrator']);
+        $user = User::factory()->create(['role' => 'customer']);
         $book1 = Book::factory()->create(['title' => 'Book Alpha']);
         $book2 = Book::factory()->create(['title' => 'Book Beta']);
 
         Rental::factory()->count(5)->create(['user_id' => $user->id, 'book_id' => $book1->id]);
         Rental::factory()->count(10)->create(['user_id' => $user->id, 'book_id' => $book2->id]);
 
-        $this->actingAs($user);
+        $this->actingAs($admin);
 
         // Test basic pagination
         $response = $this->get(route('users.show', $user->id));

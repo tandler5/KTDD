@@ -25,10 +25,10 @@ class NavigationTest extends TestCase
 
     public function test_user_detail_route_has_correct_name_for_wildcard_matching()
     {
-        $user = User::factory()->create();
-        $otherUser = User::factory()->create();
+        $admin = User::factory()->create(['role' => 'administrator']);
+        $otherUser = User::factory()->create(['role' => 'customer']);
 
-        $response = $this->actingAs($user)->get(route('users.show', $otherUser));
+        $response = $this->actingAs($admin)->get(route('users.show', $otherUser));
 
         $response->assertStatus(200);
         $this->assertEquals('users.show', request()->route()->getName());
