@@ -19,6 +19,9 @@ class UserController extends Controller
             ->when($request->input('search_email'), function ($query, $search) {
                 $query->where('email', 'like', "%{$search}%");
             })
+            ->when($request->input('search_role'), function ($query, $role) {
+                $query->where('role', $role);
+            })
             ->latest()
             ->paginate($perPage)
             ->withQueryString()
@@ -26,12 +29,13 @@ class UserController extends Controller
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
+                'role' => $user->role,
                 'active_rentals_count' => $user->activeRentals()->count(),
             ]);
 
         return Inertia::render('Users/Index', [
             'users' => $users,
-            'filters' => $request->only(['search_name', 'search_email', 'per_page']),
+            'filters' => $request->only(['search_name', 'search_email', 'search_role', 'per_page']),
         ]);
     }
 

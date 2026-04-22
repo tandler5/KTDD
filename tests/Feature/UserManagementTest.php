@@ -33,6 +33,29 @@ class UserManagementTest extends TestCase
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
+    public function it_can_filter_users_by_role()
+    {
+        $admin = User::factory()->create(['role' => 'administrator']);
+        User::factory()->create(['name' => 'Customer User', 'role' => 'customer']);
+
+        $this->actingAs($admin);
+
+        // Filter by administrator
+        $response = $this->get(route('users.index', ['search_role' => 'administrator']));
+        $response->assertInertia(fn (Assert $page) => $page
+            ->has('users.data', 1)
+            ->where('users.data.0.role', 'administrator')
+        );
+
+        // Filter by customer
+        $response = $this->get(route('users.index', ['search_role' => 'customer']));
+        $response->assertInertia(fn (Assert $page) => $page
+            ->has('users.data', 1)
+            ->where('users.data.0.role', 'customer')
+        );
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
     public function it_can_show_user_details_with_rental_history()
     {
         $admin = User::factory()->create();

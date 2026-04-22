@@ -13,16 +13,18 @@ const props = defineProps({
 
 const search_name = ref(props.filters.search_name || '');
 const search_email = ref(props.filters.search_email || '');
+const search_role = ref(props.filters.search_role || '');
 const per_page = ref(props.filters.per_page || 10);
 const loading = ref(false);
 
 router.on('start', () => (loading.value = true));
 router.on('finish', () => (loading.value = false));
 
-watch([search_name, search_email, per_page], debounce(() => {
+watch([search_name, search_email, search_role, per_page], debounce(() => {
     router.get(route('users.index'), {
         search_name: search_name.value,
         search_email: search_email.value,
+        search_role: search_role.value,
         per_page: per_page.value
     }, {
         preserveState: true,
@@ -49,6 +51,7 @@ watch([search_name, search_email, per_page], debounce(() => {
                                     <tr>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Active Rentals</th>
                                     </tr>
                                     <tr class="bg-gray-100">
@@ -65,6 +68,16 @@ watch([search_name, search_email, per_page], debounce(() => {
                                                 placeholder="Filter email..."
                                                 class="w-full text-xs"
                                             />
+                                        </th>
+                                        <th class="px-4 py-2">
+                                            <select
+                                                v-model="search_role"
+                                                class="w-full text-xs border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 py-1"
+                                            >
+                                                <option value="">All Roles</option>
+                                                <option value="customer">Customer</option>
+                                                <option value="administrator">Administrator</option>
+                                            </select>
                                         </th>
                                         <th class="px-4 py-2"></th>
                                     </tr>
@@ -83,13 +96,18 @@ watch([search_name, search_email, per_page], debounce(() => {
                                             {{ user.email }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                            <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider" :class="user.role === 'administrator' ? 'bg-purple-100 text-purple-700' : 'bg-green-100 text-green-700'">
+                                                {{ user.role }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
                                             <span class="px-2 py-1 rounded text-xs font-bold" :class="user.active_rentals_count > 0 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-500'">
                                                 {{ user.active_rentals_count }} active
                                             </span>
                                         </td>
                                     </tr>
                                     <tr v-if="users.data.length === 0">
-                                        <td colspan="3" class="px-6 py-10 text-center text-gray-400 text-sm">
+                                        <td colspan="4" class="px-6 py-10 text-center text-gray-400 text-sm">
                                             No users found matching your criteria.
                                         </td>
                                     </tr>
