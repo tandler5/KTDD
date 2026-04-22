@@ -50,14 +50,21 @@ class BookController extends Controller
         ]);
     }
 
-    public function show(Book $book)
+    public function show(Book $book, Request $request)
     {
+        $perPage = $request->input('per_page', 10);
         $book->load(['currentRental.user']);
 
         $rentals = $book->rentals()
             ->with('user')
+            ->when($request->input('search_user'), function ($query, $search) {
+                $query->whereHas('user', function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%");
+                });
+            })
             ->latest()
-            ->paginate(10)
+            ->paginate($perPage)
+            ->withQueryString()
             ->through(fn ($rental) => [
                 'id' => $rental->id,
                 'user_id' => $rental->user_id,
@@ -80,6 +87,7 @@ class BookController extends Controller
                 ] : null,
             ],
             'rentals' => $rentals,
+            'filters' => $request->only(['search_user', 'per_page']),
         ]);
     }
 

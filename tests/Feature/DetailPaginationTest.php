@@ -16,46 +16,52 @@ class DetailPaginationTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function book_show_page_has_paginated_history()
     {
-        $user = User::factory()->create();
+        $user1 = User::factory()->create(['name' => 'Alice']);
+        $user2 = User::factory()->create(['name' => 'Bob']);
         $book = Book::factory()->create();
 
-        // Create 15 rentals for this book
-        Rental::factory()->count(15)->create([
-            'book_id' => $book->id,
-            'user_id' => $user->id,
-        ]);
+        Rental::factory()->count(5)->create(['book_id' => $book->id, 'user_id' => $user1->id]);
+        Rental::factory()->count(10)->create(['book_id' => $book->id, 'user_id' => $user2->id]);
 
-        $this->actingAs($user);
+        $this->actingAs($user1);
 
+        // Test basic pagination
         $response = $this->get(route('books.show', $book->id));
-
         $response->assertStatus(200);
-        $response->assertInertia(fn (Assert $page) => $page
-            ->has('rentals.data', 10) // Assuming 10 per page
-            ->has('rentals.links')
-        );
+        $response->assertInertia(fn (Assert $page) => $page->has('rentals.data', 10));
+
+        // Test filtering by user name
+        $response = $this->get(route('books.show', [$book->id, 'search_user' => 'Alice']));
+        $response->assertInertia(fn (Assert $page) => $page->has('rentals.data', 5));
+
+        // Test per_page
+        $response = $this->get(route('books.show', [$book->id, 'per_page' => 50]));
+        $response->assertInertia(fn (Assert $page) => $page->has('rentals.data', 15));
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
     public function user_show_page_has_paginated_history()
     {
         $user = User::factory()->create();
-        $book = Book::factory()->create();
+        $book1 = Book::factory()->create(['title' => 'Book Alpha']);
+        $book2 = Book::factory()->create(['title' => 'Book Beta']);
 
-        // Create 15 rentals for this user
-        Rental::factory()->count(15)->create([
-            'book_id' => $book->id,
-            'user_id' => $user->id,
-        ]);
+        Rental::factory()->count(5)->create(['user_id' => $user->id, 'book_id' => $book1->id]);
+        Rental::factory()->count(10)->create(['user_id' => $user->id, 'book_id' => $book2->id]);
 
         $this->actingAs($user);
 
+        // Test basic pagination
         $response = $this->get(route('users.show', $user->id));
-
         $response->assertStatus(200);
-        $response->assertInertia(fn (Assert $page) => $page
-            ->has('rentals.data', 10)
-            ->has('rentals.links')
-        );
+        $response->assertInertia(fn (Assert $page) => $page->has('rentals.data', 10));
+
+        // Test filtering by book title
+        $response = $this->get(route('users.show', [$user->id, 'search_book' => 'Alpha']));
+        $response->assertInertia(fn (Assert $page) => $page->has('rentals.data', 5));
+
+        // Test per_page
+        $response = $this->get(route('users.show', [$user->id, 'per_page' => 50]));
+        $response->assertInertia(fn (Assert $page) => $page->has('rentals.data', 15));
     }
 }
