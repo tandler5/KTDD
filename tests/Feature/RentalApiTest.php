@@ -91,4 +91,174 @@ class RentalApiTest extends TestCase
 
         $this->assertTrue($book->fresh()->isAvailable());
     }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function it_returns_json_error_for_unauthenticated_rental()
+    {
+        $book = Book::factory()->create();
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->postJson('/api/rentals', [
+            'book_id' => $book->id,
+            'user_id' => 99999,
+        ]);
+
+        $response->assertStatus(422);
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function it_can_handle_rental_validation_errors()
+    {
+        $response = $this->postJson('/api/rentals', []);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['book_id']);
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function it_uses_authenticated_user_when_user_id_not_provided()
+    {
+        $user = User::factory()->create();
+        $book = Book::factory()->create();
+
+        $this->actingAs($user);
+
+        $response = $this->postJson('/api/rentals', [
+            'book_id' => $book->id,
+        ]);
+
+        $response->assertStatus(201);
+
+        $this->assertDatabaseHas('rentals', [
+            'book_id' => $book->id,
+            'user_id' => $user->id,
+        ]);
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function it_returns_error_when_auth_user_is_null()
+    {
+        $book = Book::factory()->create();
+
+        $response = $this->postJson('/api/rentals', [
+            'book_id' => $book->id,
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonFragment(['message' => 'User not authenticated']);
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function it_returns_web_success_message_on_rental()
+    {
+        $user = User::factory()->create();
+        $book = Book::factory()->create();
+
+        $this->actingAs($user);
+
+        $response = $this->post('/api/rentals', [
+            'book_id' => $book->id,
+        ]);
+
+        $response->assertSessionHas('success', 'Book rented successfully');
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function it_returns_web_error_message_on_rental_failure()
+    {
+        $user = User::factory()->create();
+        $book = Book::factory()->create();
+
+        $user2 = User::factory()->create();
+
+        $book->rentals()->create([
+            'user_id' => $user2->id,
+            'rented_at' => now(),
+            'due_date' => now()->addDays(14),
+        ]);
+
+        $this->actingAs($user);
+
+        $response = $this->post('/api/rentals', [
+            'book_id' => $book->id,
+        ]);
+
+        $response->assertSessionHas('error', 'Book is already rented');
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function it_returns_web_success_message_on_return()
+    {
+        $user = User::factory()->create();
+        $book = Book::factory()->create();
+
+        $book->rentals()->create([
+            'user_id' => $user->id,
+            'rented_at' => now(),
+            'due_date' => now()->addDays(14),
+        ]);
+
+        $this->actingAs($user);
+
+        $response = $this->post('/api/rentals/return', [
+            'book_id' => $book->id,
+        ]);
+
+        $response->assertSessionHas('success', 'Book returned successfully');
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function it_returns_web_error_message_on_return_failure()
+    {
+        $user = User::factory()->create();
+        $book = Book::factory()->create();
+
+        $this->actingAs($user);
+
+        $response = $this->post('/api/rentals/return', [
+            'book_id' => $book->id,
+        ]);
+
+        $response->assertSessionHas('error', 'Book is not currently rented');
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function it_returns_json_error_on_rental_failure()
+    {
+        $user = User::factory()->create();
+        $book = Book::factory()->create();
+
+        $user2 = User::factory()->create();
+
+        $book->rentals()->create([
+            'user_id' => $user2->id,
+            'rented_at' => now(),
+            'due_date' => now()->addDays(14),
+        ]);
+
+        $this->actingAs($user);
+
+        $response = $this->postJson('/api/rentals', [
+            'book_id' => $book->id,
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonFragment(['message' => 'Book is already rented']);
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function it_returns_json_error_on_return_failure()
+    {
+        $user = User::factory()->create();
+        $book = Book::factory()->create();
+
+        $this->actingAs($user);
+
+        $response = $this->postJson('/api/rentals/return', [
+            'book_id' => $book->id,
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonFragment(['message' => 'Book is not currently rented']);
+    }
 }

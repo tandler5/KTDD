@@ -121,4 +121,48 @@ class DetailPaginationTest extends TestCase
         ]));
         $response->assertInertia(fn (Assert $page) => $page->has('rentals.data', 10));
     }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function admin_can_see_book_rental_history()
+    {
+        $admin = User::factory()->create(['role' => 'administrator']);
+        $user = User::factory()->create(['role' => 'customer']);
+        $book = Book::factory()->create();
+
+        // Create some rentals for the book
+        Rental::factory()->count(3)->create([
+            'book_id' => $book->id,
+            'user_id' => $user->id,
+        ]);
+
+        $response = $this->actingAs($admin)->get(route('books.show', $book->id));
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn (Assert $page) => $page
+            ->where('canViewRentalHistory', true)
+            ->has('rentals.data', 3)
+        );
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function non_admin_cannot_see_book_rental_history()
+    {
+        $customer = User::factory()->create(['role' => 'customer']);
+        $user = User::factory()->create(['role' => 'customer']);
+        $book = Book::factory()->create();
+
+        // Create some rentals for the book
+        Rental::factory()->count(3)->create([
+            'book_id' => $book->id,
+            'user_id' => $user->id,
+        ]);
+
+        $response = $this->actingAs($customer)->get(route('books.show', $book->id));
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn (Assert $page) => $page
+            ->where('canViewRentalHistory', false)
+            ->has('rentals.data', 0)
+        );
+    }
 }

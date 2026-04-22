@@ -91,6 +91,22 @@ class UserManagementTest extends TestCase
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
+    public function non_admin_user_triggers_abort_on_role_update()
+    {
+        $customer = User::factory()->create(['role' => 'customer']);
+        $otherUser = User::factory()->create(['role' => 'customer']);
+
+        $this->actingAs($customer);
+
+        $response = $this->patch(route('users.update-role', $otherUser), [
+            'role' => 'administrator',
+        ]);
+
+        $this->assertTrue($customer->isAdmin() === false);
+        $response->assertStatus(403);
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
     public function customer_cannot_update_user_role()
     {
         $user1 = User::factory()->create(['role' => 'customer']);
@@ -104,6 +120,21 @@ class UserManagementTest extends TestCase
 
         $response->assertStatus(403);
         $this->assertEquals('customer', $user2->fresh()->role);
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function non_admin_returns_403_on_role_update()
+    {
+        $customer = User::factory()->create(['role' => 'customer']);
+        $targetUser = User::factory()->create(['role' => 'customer']);
+
+        $this->actingAs($customer);
+
+        $response = $this->patchJson(route('users.update-role', $targetUser), [
+            'role' => 'administrator',
+        ]);
+
+        $response->assertStatus(403);
     }
 
     #[\PHPUnit\Framework\Attributes\Test]

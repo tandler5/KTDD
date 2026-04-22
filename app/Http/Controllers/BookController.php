@@ -12,17 +12,38 @@ class BookController extends Controller
     {
         $perPage = $request->input('per_page', 10);
 
+        // Only apply ONE filter at a time to avoid conflicting filters
+        // Priority: search_title > search_author > search_isbn > search_status
+        $filterKeys = ['search_title', 'search_author', 'search_isbn', 'search_status'];
+        $activeFilter = null;
+        foreach ($filterKeys as $key) {
+            if ($request->has($key) && $request->input($key) !== null && $request->input($key) !== '') {
+                $activeFilter = $key;
+                break;
+            }
+        }
+
         $books = Book::query()
-            ->when($request->input('search_title'), function ($query, $search) {
-                $query->where('title', 'like', "%{$search}%");
+            ->when($activeFilter === 'search_title', function ($query) use ($request) {
+                $search = $request->input('search_title');
+                if ($search) {
+                    $query->where('title', 'like', "%{$search}%");
+                }
             })
-            ->when($request->input('search_author'), function ($query, $search) {
-                $query->where('author', 'like', "%{$search}%");
+            ->when($activeFilter === 'search_author', function ($query) use ($request) {
+                $search = $request->input('search_author');
+                if ($search) {
+                    $query->where('author', 'like', "%{$search}%");
+                }
             })
-            ->when($request->input('search_isbn'), function ($query, $search) {
-                $query->where('isbn', 'like', "%{$search}%");
+            ->when($activeFilter === 'search_isbn', function ($query) use ($request) {
+                $search = $request->input('search_isbn');
+                if ($search) {
+                    $query->where('isbn', 'like', "%{$search}%");
+                }
             })
-            ->when($request->input('search_status'), function ($query, $status) {
+            ->when($activeFilter === 'search_status', function ($query) use ($request) {
+                $status = $request->input('search_status');
                 if ($status === 'available') {
                     $query->whereDoesntHave('rentals', function ($q) {
                         $q->whereNull('returned_at');
@@ -35,7 +56,6 @@ class BookController extends Controller
             })
             ->latest()
             ->paginate($perPage)
-            ->withQueryString()
             ->through(fn ($book) => [
                 'id' => $book->id,
                 'title' => $book->title,
@@ -44,9 +64,12 @@ class BookController extends Controller
                 'is_available' => $book->isAvailable(),
             ]);
 
+        // Only pass the filters that are actually being used in this request
+        $passedFilters = $activeFilter ? [$activeFilter => $request->input($activeFilter)] : [];
+
         return Inertia::render('Books/Index', [
             'books' => $books,
-            'filters' => $request->only(['search_title', 'search_author', 'search_isbn', 'search_status', 'per_page']),
+            'filters' => $passedFilters + ['per_page' => $perPage],
             'canCreate' => $request->user()?->isAdmin() ?? false,
         ]);
     }
