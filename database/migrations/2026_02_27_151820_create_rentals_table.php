@@ -17,6 +17,7 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id');
             $table->timestamp('rented_at');
             $table->timestamp('due_date');
+            $table->timestamp('returned_at')->nullable();
             $table->timestamps();
         });
     }
