@@ -45,12 +45,14 @@ describe('AuthenticatedLayout.vue Navigation', () => {
         mockPage.value.component = 'Books/Show';
         mockPage.value.url = '/books/1';
 
-        const routeMock = (name) => {
-            if (name) return `http://localhost/${name.replace('.', '/')}`;
-            return {
-                current: () => false
-            };
-        };
+        const routeMock = vi.fn((name) => {
+            if (!name) {
+                return {
+                    current: (routeName) => false
+                };
+            }
+            return `http://localhost/${name.replace('.', '/')}`;
+        });
         global.route = routeMock;
 
         const wrapper = mount(AuthenticatedLayout, {
@@ -80,7 +82,12 @@ describe('AuthenticatedLayout.vue Navigation', () => {
     it('displays the user role in the navigation', () => {
         mockPage.value.props.auth.user.role = 'administrator';
 
-        const routeMock = () => ({ current: () => false });
+        const routeMock = vi.fn((name) => {
+            if (!name) {
+                return { current: (routeName) => false };
+            }
+            return `http://localhost/${name.replace('.', '/')}`;
+        });
         global.route = routeMock;
 
         const wrapper = mount(AuthenticatedLayout, {
@@ -104,10 +111,12 @@ describe('AuthenticatedLayout.vue Navigation', () => {
     });
 
     it('hides Users and Rentals links for customer role', () => {
-        const routeMock = (name) => {
-            if (name) return `http://localhost/${name.replace('.', '/')}`;
-            return { current: () => false };
-        };
+        const routeMock = vi.fn((name) => {
+            if (!name) {
+                return { current: () => false };
+            }
+            return `http://localhost/${name.replace('.', '/')}`;
+        });
         global.route = routeMock;
 
         const wrapper = mount(AuthenticatedLayout, {
@@ -135,10 +144,12 @@ describe('AuthenticatedLayout.vue Navigation', () => {
     it('shows Users and Rentals links for administrator role', () => {
         mockPage.value.props.auth.user.role = 'administrator';
 
-        const routeMock = (name) => {
-            if (name) return `http://localhost/${name.replace('.', '/')}`;
-            return { current: () => false };
-        };
+        const routeMock = vi.fn((name) => {
+            if (!name) {
+                return { current: () => false };
+            }
+            return `http://localhost/${name.replace('.', '/')}`;
+        });
         global.route = routeMock;
 
         const wrapper = mount(AuthenticatedLayout, {

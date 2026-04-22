@@ -1,6 +1,15 @@
 import { mount } from '@vue/test-utils';
 import UserIndex from '@/Pages/Users/Index.vue';
 import { describe, it, expect, vi } from 'vitest';
+import { ref } from 'vue';
+
+const mockPage = ref({
+    props: {
+        auth: {
+            user: { name: 'Admin', role: 'administrator' }
+        }
+    }
+});
 
 vi.mock('@inertiajs/vue3', async () => {
     const actual = await vi.importActual('@inertiajs/vue3');
@@ -8,6 +17,7 @@ vi.mock('@inertiajs/vue3', async () => {
         ...actual,
         Head: { render: () => null },
         Link: { template: '<a><slot /></a>' },
+        usePage: () => mockPage.value,
         router: {
             get: vi.fn(),
             on: vi.fn(),
@@ -19,6 +29,8 @@ global.route = vi.fn(() => '');
 
 describe('UserIndex.vue', () => {
     it('shows Role column and displays roles correctly', () => {
+        mockPage.value.props.auth.user.role = 'administrator';
+
         const users = {
             data: [
                 { id: 1, name: 'Admin', email: 'admin@example.com', role: 'administrator', active_rentals_count: 0 },

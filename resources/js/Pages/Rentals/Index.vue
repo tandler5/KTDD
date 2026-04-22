@@ -2,14 +2,18 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Pagination from '@/Components/Pagination.vue';
 import TextInput from '@/Components/TextInput.vue';
-import { Head, Link, router } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { ref, watch, computed } from 'vue';
 import debounce from 'lodash/debounce';
+
+const page = usePage();
 
 const props = defineProps({
     rentals: Object,
     filters: Object,
 });
+
+const isAdministrator = computed(() => page.props.auth.user.role === 'administrator');
 
 const search_book = ref(props.filters.search_book || '');
 const search_user = ref(props.filters.search_user || '');
@@ -57,7 +61,12 @@ watch([search_book, search_user, rented_from, rented_to, due_from, due_to, searc
 
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div v-if="!isAdministrator" class="bg-red-50 border border-red-200 rounded-lg p-6">
+                    <h3 class="text-red-800 font-bold text-lg mb-2">Access Denied</h3>
+                    <p class="text-red-700">This page is restricted to administrators only.</p>
+                </div>
+
+                <div v-else class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900">
                         <div class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200">
