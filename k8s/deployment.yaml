@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ktdd-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ktdd
+  template:
+    metadata:
+      labels:
+        app: ktdd
+    spec:
+      containers:
+      - name: php
+        image: marektandler/ktdd-app:latest
+        ports:
+        - containerPort: 9000
+        envFrom:
+        - configMapRef:
+            name: ktdd-config
+        - secretRef:
+            name: ktdd-secrets
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "256Mi"
+        livenessProbe:
+          tcpSocket:
+            port: 9000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+
+      - name: nginx
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx/conf.d/default.conf
+          subPath: default.conf
+        - name: app-code
+          mountPath: /var/www/html
+
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: nginx-config
+      - name: app-code
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ktdd-service
+spec:
+  selector:
+    app: ktdd
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: LoadBalancer
