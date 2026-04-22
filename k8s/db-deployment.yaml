@@ -25,8 +25,30 @@ spec:
             secretKeyRef:
               name: ktdd-secrets
               key: DB_PASSWORD
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: ktdd-secrets
+              key: DB_USERNAME
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: ktdd-secrets
+              key: DB_PASSWORD
         ports:
         - containerPort: 3306
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+        livenessProbe:
+          tcpSocket:
+            port: 3306
+          initialDelaySeconds: 20
+          periodSeconds: 20
 ---
 apiVersion: v1
 kind: Service

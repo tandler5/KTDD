@@ -40,16 +40,4 @@ spec:
               port: 9000
             initialDelaySeconds: 5
             periodSeconds: 10
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: ktdd-app
-spec:
-  selector:
-    app: ktdd-app
-  ports:
-    - protocol: TCP
-      port: 9000
-      targetPort: 9000
-  type: ClusterIP
+

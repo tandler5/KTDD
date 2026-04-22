@@ -1,13 +1,18 @@
-name: CI
+name: CI/CD
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: ["trunk"]
+    tags: ["v*"]
   pull_request:
-    branches: [ "main", "master" ]
+    branches: ["trunk"]
+
+permissions:
+  contents: read
+  packages: write
 
 jobs:
-  laravel-tests:
+  tests:
     runs-on: ubuntu-latest
 
     services:
@@ -21,47 +26,169 @@ jobs:
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
-    - uses: shivammathur/setup-php@v2
-      with:
-        php-version: '8.2'
-        extensions: mbstring, dom, curl, libxml, mysql, sqlite, bcmath, intl
-        coverage: xdebug
+      - uses: actions/checkout@v4
 
-    - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: mbstring, dom, curl, libxml, mysql, sqlite, bcmath, intl
+          coverage: xdebug
 
-    - name: Copy .env
-      run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
 
-    - name: Install Dependencies
-      run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+      - name: Copy .env
+        run: php -r "file_exists('.env') || copy('.env.example', '.env');"
 
-    - name: Generate key
-      run: php artisan key:generate
+      - name: Install PHP dependencies
+        run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
 
-    - name: Directory Permissions
-      run: chmod -R 777 storage bootstrap/cache
+      - name: Install JS dependencies
+        run: npm ci
 
-    - name: Run Pint (Static Analysis)
-      run: ./vendor/bin/pint --test
+      - name: Generate key
+        run: php artisan key:generate
 
-    - name: Execute tests (Unit and Feature tests) via PHPUnit
-      env:
-        DB_CONNECTION: mysql
-        DB_HOST: 127.0.0.1
-        DB_PORT: 3306
-        DB_DATABASE: ktdd_test
-        DB_USERNAME: root
-        DB_PASSWORD: password
-      run: php artisan test --coverage-text --coverage-clover=coverage.xml
+      - name: Directory permissions
+        run: chmod -R 777 storage bootstrap/cache
 
-    - name: Upload coverage reports to Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        files: ./coverage.xml
-      continue-on-error: true
+      - name: Run Pint (static analysis)
+        run: ./vendor/bin/pint --test
 
-    - name: Archive code coverage results
-      uses: actions/upload-artifact@v4
-      with:
-        name: code-coverage-report
-        path: coverage.xml
+      - name: Run PHPUnit (unit + feature + coverage)
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: ktdd_test
+          DB_USERNAME: root
+          DB_PASSWORD: password
+        run: php artisan test --log-junit junit.xml --coverage-text --coverage-clover=coverage.xml
+
+      - name: Run Vitest
+        run: npx vitest run
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage.xml
+        continue-on-error: true
+
+      - name: Archive test and coverage artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-artifacts
+          path: |
+            coverage.xml
+            junit.xml
+
+  build-and-push:
+    runs-on: ubuntu-latest
+    needs: tests
+    outputs:
+      image: ${{ steps.meta.outputs.tags }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=sha
+            type=raw,value=staging,enable=${{ github.ref == 'refs/heads/trunk' }}
+            type=raw,value=production,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and (optionally) push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  deploy-staging:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: github.event_name == 'push' && github.ref == 'refs/heads/trunk' && secrets.KUBE_CONFIG_STAGING != ''
+    environment: staging
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBE_CONFIG_STAGING }}" | base64 --decode > ~/.kube/config
+
+      - name: Ensure namespace exists
+        run: kubectl apply -f k8s/overlays/staging/namespace.yaml
+
+      - name: Apply staging secrets
+        run: |
+          kubectl create secret generic ktdd-secrets \
+            --namespace ktdd-staging \
+            --from-literal=DB_USERNAME="${{ secrets.STAGING_DB_USERNAME }}" \
+            --from-literal=DB_PASSWORD="${{ secrets.STAGING_DB_PASSWORD }}" \
+            --from-literal=APP_KEY="${{ secrets.STAGING_APP_KEY }}" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Deploy staging manifests
+        run: |
+          kubectl apply -k k8s/overlays/staging
+          kubectl set image deployment/ktdd-app app=ghcr.io/${{ github.repository }}:staging -n ktdd-staging
+          kubectl rollout status deployment/ktdd-app -n ktdd-staging --timeout=120s
+
+  deploy-production:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && secrets.KUBE_CONFIG_PRODUCTION != ''
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBE_CONFIG_PRODUCTION }}" | base64 --decode > ~/.kube/config
+
+      - name: Ensure namespace exists
+        run: kubectl apply -f k8s/overlays/production/namespace.yaml
+
+      - name: Apply production secrets
+        run: |
+          kubectl create secret generic ktdd-secrets \
+            --namespace ktdd-production \
+            --from-literal=DB_USERNAME="${{ secrets.PRODUCTION_DB_USERNAME }}" \
+            --from-literal=DB_PASSWORD="${{ secrets.PRODUCTION_DB_PASSWORD }}" \
+            --from-literal=APP_KEY="${{ secrets.PRODUCTION_APP_KEY }}" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Deploy production manifests
+        run: |
+          kubectl apply -k k8s/overlays/production
+          kubectl set image deployment/ktdd-app app=ghcr.io/${{ github.repository }}:production -n ktdd-production
+          kubectl rollout status deployment/ktdd-app -n ktdd-production --timeout=120s
