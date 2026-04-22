@@ -1,14 +1,27 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import Toast from '@/Components/Toast.vue';
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 
 const showingNavigationDropdown = ref(false);
+const page = usePage();
+
+const isBooksActive = computed(() => {
+    return route().current('books.*') || page.component.startsWith('Books/') || page.url.startsWith('/books');
+});
+
+const isUsersActive = computed(() => {
+    return route().current('users.*') || page.component.startsWith('Users/') || page.url.startsWith('/users');
+});
+
+const isRentalsActive = computed(() => {
+    return route().current('rentals.*') || page.component.startsWith('Rentals/') || page.url.startsWith('/rentals');
+});
 </script>
 
 <template>
@@ -42,19 +55,19 @@ const showingNavigationDropdown = ref(false);
                                 </NavLink>
                                 <NavLink
                                     :href="route('books.index')"
-                                    :active="route().current('books.*') || $page.component.startsWith('Books/')"
+                                    :active="isBooksActive"
                                 >
                                     Books
                                 </NavLink>
                                 <NavLink
                                     :href="route('users.index')"
-                                    :active="route().current('users.*') || $page.component.startsWith('Users/')"
+                                    :active="isUsersActive"
                                 >
                                     Users
                                 </NavLink>
                                 <NavLink
                                     :href="route('rentals.index')"
-                                    :active="route().current('rentals.*') || $page.component.startsWith('Rentals/')"
+                                    :active="isRentalsActive"
                                 >
                                     Rentals
                                 </NavLink>
@@ -167,19 +180,19 @@ const showingNavigationDropdown = ref(false);
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
                             :href="route('books.index')"
-                            :active="route().current('books.*') || $page.component.startsWith('Books/')"
+                            :active="isBooksActive"
                         >
                             Books
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
                             :href="route('users.index')"
-                            :active="route().current('users.*') || $page.component.startsWith('Users/')"
+                            :active="isUsersActive"
                         >
                             Users
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
                             :href="route('rentals.index')"
-                            :active="route().current('rentals.*') || $page.component.startsWith('Rentals/')"
+                            :active="isRentalsActive"
                         >
                             Rentals
                         </ResponsiveNavLink>
