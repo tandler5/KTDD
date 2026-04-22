@@ -34,6 +34,21 @@ class RentalController extends Controller
                     $q->where('name', 'like', "%{$search}%");
                 });
             })
+            ->when($request->input('search_rented'), function ($query, $date) {
+                $query->whereDate('rented_at', $date);
+            })
+            ->when($request->input('search_due'), function ($query, $date) {
+                $query->whereDate('due_date', $date);
+            })
+            ->when($request->input('search_status'), function ($query, $status) {
+                if ($status === 'active') {
+                    $query->whereNull('returned_at');
+                } elseif ($status === 'returned') {
+                    $query->whereNotNull('returned_at');
+                } elseif ($status === 'overdue') {
+                    $query->whereNull('returned_at')->where('due_date', '<', now());
+                }
+            })
             ->latest()
             ->paginate($perPage)
             ->withQueryString()
@@ -49,7 +64,7 @@ class RentalController extends Controller
 
         return Inertia::render('Rentals/Index', [
             'rentals' => $rentals,
-            'filters' => $request->only(['search_book', 'search_user', 'per_page']),
+            'filters' => $request->only(['search_book', 'search_user', 'search_rented', 'search_due', 'search_status', 'per_page']),
         ]);
     }
 
