@@ -1,59 +1,53 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# KTDD - Systém pro půjčování knih
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Tento projekt je semestrální prací zaměřenou na demonstraci TDD (Test-Driven Development) a DevOps principů v prostředí frameworku Laravel.
 
-## About Laravel
+## Doména: Půjčovna knih
+Aplikace slouží ke správě výpůjček knih v knihovně.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+### Doménové entity
+1. **User** (Uživatel): Čtenář, který si půjčuje knihy.
+2. **Book** (Kniha): Předmět výpůjčky.
+3. **Rental** (Výpůjčka): Vztah mezi uživatelem a knihou s časovým omezením.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### Business pravidla (povinná funkcionalita)
+1. **Limit výpůjček**: Uživatel může mít v jeden okamžik půjčeny maximálně 3 knihy.
+2. **Dostupnost**: Nelze si půjčit knihu, která je již půjčená jiným uživatelem.
+3. **Blokace při prodlení**: Uživatel, který má alespoň jednu knihu po termínu vrácení, si nemůže půjčit další knihu.
+4. **Validace stavu**: Knihu lze "vrátit" pouze v případě, že je ve stavu "půjčeno".
+5. **Idempotence**: Opakovaný požadavek na zapůjčení stejné knihy stejným uživatelem (pokud již proběhlo) nevede k duplicitnímu záznamu.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## Technické požadavky a kvalita
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### Testovací strategie
+- **Unit testy**: Testování business pravidel v entitách a službách (TDD cyklus Red-Green-Refactor).
+- **Integrační testy**: Ověření REST API endpointů a propojení s databází.
+- **Mockování**: Použití pro simulaci času (ověření exspirace výpůjček) a případných externích služeb.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### CI/CD Pipeline (GitHub Actions)
+- Automatický build a instalace závislostí.
+- Spouštění testů při každém pushi/PR.
+- Měření Code Coverage (JaCoCo ekvivalent pro PHP - Xdebug/PCOV).
+- Sestavení Docker image.
 
-## Laravel Sponsors
+### Infrastruktura
+- **Docker**: Kontejnerizace aplikace a MySQL databáze.
+- **Kubernetes**: Manifesty pro Deployment, Service, ConfigMap a Secret.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+---
 
-### Premium Partners
+## Jak spustit projekt lokálně
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### Požadavky
+- Docker a Docker Compose
 
-## Contributing
+### Instalace
+1. Klonování repozitáře: `git clone ...`
+2. Spuštění prostředí: `docker compose up -d`
+3. Instalace závislostí: `docker compose exec app composer install`
+4. Spuštění migrací: `docker compose exec app php artisan migrate`
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### Spuštění testů
+`docker compose exec app php artisan test --coverage`
