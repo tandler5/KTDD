@@ -42,19 +42,19 @@ const showingNavigationDropdown = ref(false);
                                 </NavLink>
                                 <NavLink
                                     :href="route('books.index')"
-                                    :active="route().current('books.*')"
+                                    :active="route().current('books.*') || $page.component.startsWith('Books/')"
                                 >
                                     Books
                                 </NavLink>
                                 <NavLink
                                     :href="route('users.index')"
-                                    :active="route().current('users.*')"
+                                    :active="route().current('users.*') || $page.component.startsWith('Users/')"
                                 >
                                     Users
                                 </NavLink>
                                 <NavLink
                                     :href="route('rentals.index')"
-                                    :active="route().current('rentals.*')"
+                                    :active="route().current('rentals.*') || $page.component.startsWith('Rentals/')"
                                 >
                                     Rentals
                                 </NavLink>
@@ -167,19 +167,19 @@ const showingNavigationDropdown = ref(false);
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
                             :href="route('books.index')"
-                            :active="route().current('books.*')"
+                            :active="route().current('books.*') || $page.component.startsWith('Books/')"
                         >
                             Books
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
                             :href="route('users.index')"
-                            :active="route().current('users.*')"
+                            :active="route().current('users.*') || $page.component.startsWith('Users/')"
                         >
                             Users
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
                             :href="route('rentals.index')"
-                            :active="route().current('rentals.*')"
+                            :active="route().current('rentals.*') || $page.component.startsWith('Rentals/')"
                         >
                             Rentals
                         </ResponsiveNavLink>

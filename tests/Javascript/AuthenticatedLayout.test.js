@@ -25,11 +25,11 @@ describe('AuthenticatedLayout.vue Navigation', () => {
         vi.clearAllMocks();
     });
 
-    it('highlights Books link when route().current matches books.*', () => {
+    it('highlights Books link when $page.component starts with Books/', () => {
         const routeMock = (name) => {
             if (name) return `http://localhost/${name.replace('.', '/')}`;
             return {
-                current: (pattern) => pattern === 'books.*'
+                current: () => false
             };
         };
         global.route = routeMock;
@@ -50,6 +50,7 @@ describe('AuthenticatedLayout.vue Navigation', () => {
                 mocks: {
                     route: routeMock,
                     $page: {
+                        component: 'Books/Show',
                         props: {
                             auth: {
                                 user: {
@@ -63,7 +64,10 @@ describe('AuthenticatedLayout.vue Navigation', () => {
             }
         });
 
-        const booksLink = wrapper.findAll('.active').find(n => n.text().includes('Books'));
+        const activeLinks = wrapper.findAll('.active');
+        const booksLink = activeLinks.find(n => n.text().includes('Books'));
+
         expect(booksLink).toBeDefined();
+        expect(booksLink.text()).toContain('Books');
     });
 });
