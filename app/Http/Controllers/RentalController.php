@@ -6,6 +6,7 @@ use App\Models\Rental;
 use App\Models\Book;
 use App\Models\User;
 use App\Services\RentalService;
+use Inertia\Inertia;
 use Illuminate\Http\Request;
 use Exception;
 
@@ -18,10 +19,23 @@ class RentalController extends Controller
         $this->rentalService = $rentalService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $rentals = Rental::with(['book', 'user'])->latest()->get()->map(function ($rental) {
-            return [
+        $rentals = Rental::with(['book', 'user'])
+            ->when($request->input('search_book'), function ($query, $search) {
+                $query->whereHas('book', function ($q) use ($search) {
+                    $q->where('title', 'like', "%{$search}%");
+                });
+            })
+            ->when($request->input('search_user'), function ($query, $search) {
+                $query->whereHas('user', function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%");
+                });
+            })
+            ->latest()
+            ->paginate(10)
+            ->withQueryString()
+            ->through(fn ($rental) => [
                 'id' => $rental->id,
                 'book_title' => $rental->book->title,
                 'user_name' => $rental->user->name,
@@ -29,11 +43,11 @@ class RentalController extends Controller
                 'due_date' => $rental->due_date,
                 'returned_at' => $rental->returned_at,
                 'is_overdue' => $rental->returned_at === null && \Carbon\Carbon::parse($rental->due_date)->isPast(),
-            ];
-        });
+            ]);
 
         return Inertia::render('Rentals/Index', [
-            'rentals' => $rentals
+            'rentals' => $rentals,
+            'filters' => $request->only(['search_book', 'search_user']),
         ]);
     }
 
