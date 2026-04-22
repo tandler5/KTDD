@@ -21,6 +21,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
     ];
 
     /**
@@ -66,5 +67,10 @@ class User extends Authenticatable
     public function canRentMoreBooks(): bool
     {
         return $this->activeRentals()->count() < 3 && !$this->hasOverdueRentals();
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'administrator';
     }
 }

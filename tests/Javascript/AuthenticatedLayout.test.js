@@ -9,7 +9,7 @@ const mockPage = ref({
     url: '/',
     props: {
         auth: {
-            user: { name: 'Test User', email: 'test@example.com' }
+            user: { name: 'Test User', email: 'test@example.com', role: 'customer' }
         }
     }
 });
@@ -31,7 +31,7 @@ describe('AuthenticatedLayout.vue Navigation', () => {
             url: '/',
             props: {
                 auth: {
-                    user: { name: 'Test User', email: 'test@example.com' }
+                    user: { name: 'Test User', email: 'test@example.com', role: 'customer' }
                 }
             }
         };
@@ -73,17 +73,10 @@ describe('AuthenticatedLayout.vue Navigation', () => {
         expect(booksLink).toBeDefined();
     });
 
-    it('highlights Books link when page.url starts with /books', async () => {
-        mockPage.value.component = 'Other/Component';
-        mockPage.value.url = '/books/1';
+    it('displays the user role in the navigation', () => {
+        mockPage.value.props.auth.user.role = 'administrator';
 
-        // We'll update the component to also check URL in the next step if this fails or if we want extra robustness
-        const routeMock = (name) => {
-            if (name) return `http://localhost/${name.replace('.', '/')}`;
-            return {
-                current: () => false
-            };
-        };
+        const routeMock = () => ({ current: () => false });
         global.route = routeMock;
 
         const wrapper = mount(AuthenticatedLayout, {
@@ -94,10 +87,7 @@ describe('AuthenticatedLayout.vue Navigation', () => {
                     DropdownLink: true,
                     Toast: true,
                     ResponsiveNavLink: true,
-                    NavLink: {
-                        props: ['active'],
-                        template: '<div :class="{ active: active }"><slot /></div>'
-                    }
+                    NavLink: true
                 },
                 mocks: {
                     route: routeMock,
@@ -106,8 +96,6 @@ describe('AuthenticatedLayout.vue Navigation', () => {
             }
         });
 
-        // This should fail initially if we only check component
-        const booksLink = wrapper.findAll('.active').find(n => n.text().includes('Books'));
-        // If we want it to pass, we need to add the URL check to the component
+        expect(wrapper.text()).toContain('administrator');
     });
 });

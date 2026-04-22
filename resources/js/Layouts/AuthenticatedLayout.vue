@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed ,onMounted} from 'vue';
+import { ref, computed } from 'vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
@@ -9,16 +9,10 @@ import Toast from '@/Components/Toast.vue';
 import { Link, usePage } from '@inertiajs/vue3';
 
 const showingNavigationDropdown = ref(false);
-console.log('AuthenticatedLayout SCRIPT SETUP');
 const page = usePage();
 
 const isBooksActive = computed(() => {
-    console.log('Computing isBooksActive, URL:', page.url);
     return route().current('books.*') || page.component.startsWith('Books/') || page.url.startsWith('/books');
-});
-
-onMounted(() => {
-    console.log('AuthenticatedLayout mounted, URL:', page.url);
 });
 
 const isUsersActive = computed(() => {
@@ -90,7 +84,10 @@ const isRentalsActive = computed(() => {
                                                 type="button"
                                                 class="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none"
                                             >
-                                                {{ $page.props.auth.user.name }}
+                                                <div class="flex flex-col items-end mr-2">
+                                                    <span class="font-bold">{{ $page.props.auth.user.name }}</span>
+                                                    <span class="text-[10px] uppercase text-gray-400 leading-none">{{ $page.props.auth.user.role }}</span>
+                                                </div>
 
                                                 <svg
                                                     class="-me-0.5 ms-2 h-4 w-4"
@@ -214,6 +211,7 @@ const isRentalsActive = computed(() => {
                             >
                                 {{ $page.props.auth.user.name }}
                             </div>
+                            <div class="text-xs text-gray-500 uppercase font-bold">{{ $page.props.auth.user.role }}</div>
                             <div class="text-sm font-medium text-gray-500">
                                 {{ $page.props.auth.user.email }}
                             </div>
