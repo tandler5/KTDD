@@ -126,7 +126,7 @@ jobs:
   deploy-staging:
     runs-on: ubuntu-latest
     needs: build-and-push
-    if: github.event_name == 'push' && github.ref == 'refs/heads/trunk' && secrets.KUBE_CONFIG_STAGING != ''
+    if: github.event_name == 'push' && github.ref == 'refs/heads/trunk'
     environment: staging
 
     steps:
@@ -135,15 +135,33 @@ jobs:
       - name: Set up kubectl
         uses: azure/setup-kubectl@v4
 
+          - name: Check staging deploy secrets
+            id: guard
+            env:
+              KUBE_CONFIG_STAGING: ${{ secrets.KUBE_CONFIG_STAGING }}
+              STAGING_DB_USERNAME: ${{ secrets.STAGING_DB_USERNAME }}
+              STAGING_DB_PASSWORD: ${{ secrets.STAGING_DB_PASSWORD }}
+              STAGING_APP_KEY: ${{ secrets.STAGING_APP_KEY }}
+            run: |
+              if [ -z "$KUBE_CONFIG_STAGING" ] || [ -z "$STAGING_DB_USERNAME" ] || [ -z "$STAGING_DB_PASSWORD" ] || [ -z "$STAGING_APP_KEY" ]; then
+                echo "can_deploy=false" >> "$GITHUB_OUTPUT"
+                echo "Missing staging secrets, skipping deploy."
+              else
+                echo "can_deploy=true" >> "$GITHUB_OUTPUT"
+              fi
+
       - name: Configure kubeconfig
+            if: steps.guard.outputs.can_deploy == 'true'
         run: |
           mkdir -p ~/.kube
           echo "${{ secrets.KUBE_CONFIG_STAGING }}" | base64 --decode > ~/.kube/config
 
       - name: Ensure namespace exists
+            if: steps.guard.outputs.can_deploy == 'true'
         run: kubectl apply -f k8s/overlays/staging/namespace.yaml
 
       - name: Apply staging secrets
+            if: steps.guard.outputs.can_deploy == 'true'
         run: |
           kubectl create secret generic ktdd-secrets \
             --namespace ktdd-staging \
@@ -153,15 +171,20 @@ jobs:
             --dry-run=client -o yaml | kubectl apply -f -
 
       - name: Deploy staging manifests
+            if: steps.guard.outputs.can_deploy == 'true'
         run: |
           kubectl apply -k k8s/overlays/staging
           kubectl set image deployment/ktdd-app app=ghcr.io/${{ github.repository }}:staging -n ktdd-staging
           kubectl rollout status deployment/ktdd-app -n ktdd-staging --timeout=120s
 
+          - name: Skip staging deploy
+            if: steps.guard.outputs.can_deploy != 'true'
+            run: echo "Staging deploy skipped because required secrets are missing."
+
   deploy-production:
     runs-on: ubuntu-latest
     needs: build-and-push
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && secrets.KUBE_CONFIG_PRODUCTION != ''
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     environment: production
 
     steps:
@@ -170,15 +193,33 @@ jobs:
       - name: Set up kubectl
         uses: azure/setup-kubectl@v4
 
+          - name: Check production deploy secrets
+            id: guard
+            env:
+              KUBE_CONFIG_PRODUCTION: ${{ secrets.KUBE_CONFIG_PRODUCTION }}
+              PRODUCTION_DB_USERNAME: ${{ secrets.PRODUCTION_DB_USERNAME }}
+              PRODUCTION_DB_PASSWORD: ${{ secrets.PRODUCTION_DB_PASSWORD }}
+              PRODUCTION_APP_KEY: ${{ secrets.PRODUCTION_APP_KEY }}
+            run: |
+              if [ -z "$KUBE_CONFIG_PRODUCTION" ] || [ -z "$PRODUCTION_DB_USERNAME" ] || [ -z "$PRODUCTION_DB_PASSWORD" ] || [ -z "$PRODUCTION_APP_KEY" ]; then
+                echo "can_deploy=false" >> "$GITHUB_OUTPUT"
+                echo "Missing production secrets, skipping deploy."
+              else
+                echo "can_deploy=true" >> "$GITHUB_OUTPUT"
+              fi
+
       - name: Configure kubeconfig
+            if: steps.guard.outputs.can_deploy == 'true'
         run: |
           mkdir -p ~/.kube
           echo "${{ secrets.KUBE_CONFIG_PRODUCTION }}" | base64 --decode > ~/.kube/config
 
       - name: Ensure namespace exists
+            if: steps.guard.outputs.can_deploy == 'true'
         run: kubectl apply -f k8s/overlays/production/namespace.yaml
 
       - name: Apply production secrets
+            if: steps.guard.outputs.can_deploy == 'true'
         run: |
           kubectl create secret generic ktdd-secrets \
             --namespace ktdd-production \
@@ -188,7 +229,12 @@ jobs:
             --dry-run=client -o yaml | kubectl apply -f -
 
       - name: Deploy production manifests
+            if: steps.guard.outputs.can_deploy == 'true'
         run: |
           kubectl apply -k k8s/overlays/production
           kubectl set image deployment/ktdd-app app=ghcr.io/${{ github.repository }}:production -n ktdd-production
           kubectl rollout status deployment/ktdd-app -n ktdd-production --timeout=120s
+
+          - name: Skip production deploy
+            if: steps.guard.outputs.can_deploy != 'true'
+            run: echo "Production deploy skipped because required secrets are missing."
