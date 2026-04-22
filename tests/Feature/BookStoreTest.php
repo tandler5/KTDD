@@ -13,13 +13,13 @@ class BookStoreTest extends TestCase
 
     public function test_cannot_create_book_with_duplicate_isbn()
     {
-        $user = User::factory()->create();
+        $admin = User::factory()->create(['role' => 'administrator']);
 
         Book::factory()->create([
             'isbn' => '9780743273565'
         ]);
 
-        $response = $this->actingAs($user)->post(route('books.store'), [
+        $response = $this->actingAs($admin)->post(route('books.store'), [
             'title' => 'New Book',
             'author' => 'Author Name',
             'isbn' => '9780743273565'
