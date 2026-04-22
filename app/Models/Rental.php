@@ -14,4 +14,14 @@ class Rental extends Model
         'due_date',
         'returned_at',
     ];
+
+    public function book()
+    {
+        return $this->belongsTo(Book::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

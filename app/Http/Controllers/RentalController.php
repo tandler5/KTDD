@@ -18,6 +18,25 @@ class RentalController extends Controller
         $this->rentalService = $rentalService;
     }
 
+    public function index()
+    {
+        $rentals = Rental::with(['book', 'user'])->latest()->get()->map(function ($rental) {
+            return [
+                'id' => $rental->id,
+                'book_title' => $rental->book->title,
+                'user_name' => $rental->user->name,
+                'rented_at' => $rental->rented_at,
+                'due_date' => $rental->due_date,
+                'returned_at' => $rental->returned_at,
+                'is_overdue' => $rental->returned_at === null && \Carbon\Carbon::parse($rental->due_date)->isPast(),
+            ];
+        });
+
+        return Inertia::render('Rentals/Index', [
+            'rentals' => $rentals
+        ]);
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -47,7 +66,7 @@ class RentalController extends Controller
                 return response()->json(['message' => $e->getMessage()], 422);
             }
 
-            return back()->withErrors(['message' => $e->getMessage()]);
+            return back()->with('error', $e->getMessage());
         }
     }
 
@@ -61,9 +80,17 @@ class RentalController extends Controller
             $book = Book::findOrFail($validated['book_id']);
             $this->rentalService->returnBook($book);
 
-            return response()->json(['message' => 'Book returned successfully']);
+            if ($request->wantsJson()) {
+                return response()->json(['message' => 'Book returned successfully']);
+            }
+
+            return back()->with('success', 'Book returned successfully');
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 422);
+            if ($request->wantsJson()) {
+                return response()->json(['message' => $e->getMessage()], 422);
+            }
+
+            return back()->with('error', $e->getMessage());
         }
     }
 }

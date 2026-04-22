@@ -17,7 +17,12 @@ class Book extends Model
 
     public function rentals()
     {
-        return $this->hasMany(Rental::class);
+        return $this->hasMany(Rental::class)->latest();
+    }
+
+    public function currentRental()
+    {
+        return $this->hasOne(Rental::class)->whereNull('returned_at');
     }
 
     public function isAvailable(): bool

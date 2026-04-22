@@ -5,6 +5,7 @@ import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
+import Toast from '@/Components/Toast.vue';
 import { Link } from '@inertiajs/vue3';
 
 const showingNavigationDropdown = ref(false);
@@ -38,6 +39,18 @@ const showingNavigationDropdown = ref(false);
                                     :active="route().current('dashboard')"
                                 >
                                     Dashboard
+                                </NavLink>
+                                <NavLink
+                                    :href="route('books.index')"
+                                    :active="route().current('books.index')"
+                                >
+                                    Books
+                                </NavLink>
+                                <NavLink
+                                    :href="route('rentals.index')"
+                                    :active="route().current('rentals.index')"
+                                >
+                                    Rentals
                                 </NavLink>
                             </div>
                         </div>
@@ -146,6 +159,18 @@ const showingNavigationDropdown = ref(false);
                         >
                             Dashboard
                         </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('books.index')"
+                            :active="route().current('books.index')"
+                        >
+                            Books
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('rentals.index')"
+                            :active="route().current('rentals.index')"
+                        >
+                            Rentals
+                        </ResponsiveNavLink>
                     </div>
 
                     <!-- Responsive Settings Options -->
@@ -193,6 +218,8 @@ const showingNavigationDropdown = ref(false);
             <main>
                 <slot />
             </main>
+
+            <Toast />
         </div>
     </div>
 </template>

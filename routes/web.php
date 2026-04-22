@@ -22,7 +22,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('dashboard');
 
     Route::get('/books', [BookController::class, 'index'])->name('books.index');
+    Route::get('/books/create', [BookController::class, 'create'])->name('books.create');
+    Route::post('/books', [BookController::class, 'store'])->name('books.store');
+    Route::get('/books/{book}', [BookController::class, 'show'])->name('books.show');
+
+    Route::get('/rentals', [RentalController::class, 'index'])->name('rentals.index');
     Route::post('/rentals', [RentalController::class, 'store'])->name('rentals.store');
+    Route::post('/rentals/return', [RentalController::class, 'returnBook'])->name('rentals.return');
 });
 
 Route::middleware('auth')->group(function () {
