@@ -1,10 +1,12 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 
 defineProps({
     isAdministrator: Boolean,
     statistics: Object,
+    usersLink: String,
+    booksLink: String,
 });
 </script>
 
@@ -26,16 +28,16 @@ defineProps({
 
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <!-- Total Users -->
-                        <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                        <Link :href="usersLink" class="block bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 hover:shadow-md transition">
                             <div class="text-sm font-semibold text-gray-500 uppercase mb-2">Total Users</div>
                             <div class="text-3xl font-bold text-gray-800">{{ statistics.total_users }}</div>
-                        </div>
+                        </Link>
 
                         <!-- Total Books -->
-                        <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                        <Link :href="booksLink" class="block bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 hover:shadow-md transition">
                             <div class="text-sm font-semibold text-gray-500 uppercase mb-2">Total Books</div>
                             <div class="text-3xl font-bold text-gray-800">{{ statistics.total_books }}</div>
-                        </div>
+                        </Link>
 
                         <!-- Active Rentals -->
                         <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
@@ -44,13 +46,18 @@ defineProps({
                         </div>
 
                         <!-- Most Rented Book -->
-                        <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                        <Link
+                            v-if="statistics.most_rented_book"
+                            :href="route('books.show', statistics.most_rented_book.id)"
+                            class="block bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 hover:shadow-md transition"
+                        >
                             <div class="text-sm font-semibold text-gray-500 uppercase mb-2">Most Rented</div>
-                            <div v-if="statistics.most_rented_book">
-                                <p class="font-bold text-gray-800">{{ statistics.most_rented_book.title }}</p>
-                                <p class="text-xs text-gray-600">{{ statistics.most_rented_book.rental_count }} rentals</p>
-                            </div>
-                            <div v-else class="text-gray-400">No data</div>
+                            <p class="font-bold text-gray-800">{{ statistics.most_rented_book.title }}</p>
+                            <p class="text-xs text-gray-600">{{ statistics.most_rented_book.rental_count }} rentals</p>
+                        </Link>
+                        <div v-else class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                            <div class="text-sm font-semibold text-gray-500 uppercase mb-2">Most Rented</div>
+                            <div class="text-gray-400">No data</div>
                         </div>
                     </div>
                 </div>

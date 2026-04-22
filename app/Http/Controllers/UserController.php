@@ -98,6 +98,11 @@ class UserController extends Controller
             abort(403);
         }
 
+        // Prevent admin from changing own role
+        if (auth()->user()->id === $user->id) {
+            abort(403);
+        }
+
         $validated = $request->validate([
             'role' => 'required|string|in:customer,administrator',
         ]);

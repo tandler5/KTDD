@@ -33,6 +33,8 @@ class DashboardController extends Controller
         return Inertia::render('Dashboard', [
             'isAdministrator' => $isAdmin,
             'statistics' => $statistics,
+            'usersLink' => $isAdmin ? route('users.index') : null,
+            'booksLink' => route('books.index'),
         ]);
     }
 
@@ -43,6 +45,7 @@ class DashboardController extends Controller
             ->first();
 
         return $book ? [
+            'id' => $book->id,
             'title' => $book->title,
             'author' => $book->author,
             'rental_count' => $book->rentals_count,
@@ -61,10 +64,12 @@ class DashboardController extends Controller
             ->first();
 
         return $book ? [
+            'id' => $book->id,
             'title' => $book->title,
             'author' => $book->author,
             'rental_count' => $book->rentals_count,
         ] : null;
     }
 }
+
 

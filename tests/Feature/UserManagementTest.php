@@ -113,4 +113,19 @@ class UserManagementTest extends TestCase
             ->where('user.active_rentals.0.book_title', 'Test Book')
         );
     }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function administrator_cannot_change_own_role()
+    {
+        $admin = User::factory()->create(['role' => 'administrator']);
+
+        $this->actingAs($admin);
+
+        $response = $this->patch(route('users.update-role', $admin), [
+            'role' => 'customer'
+        ]);
+
+        $response->assertStatus(403);
+        $this->assertEquals('administrator', $admin->fresh()->role);
+    }
 }

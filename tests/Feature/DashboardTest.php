@@ -94,5 +94,59 @@ class DashboardTest extends TestCase
             ->has('statistics.most_rented_book')
         );
     }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function admin_dashboard_most_rented_book_contains_id(): void
+    {
+        $admin = User::factory()->create(['role' => 'administrator']);
+        $book = Book::factory()->create(['title' => 'Popular Book']);
+        $customer = User::factory()->create(['role' => 'customer']);
+
+        Rental::create([
+            'user_id' => $customer->id,
+            'book_id' => $book->id,
+            'rented_at' => now()->subDays(10),
+            'due_date' => now()->addDays(4),
+        ]);
+
+        $response = $this->actingAs($admin)->get(route('dashboard'));
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('Dashboard')
+            ->has('statistics.most_rented_book.id')
+        );
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function admin_dashboard_includes_users_link(): void
+    {
+        $admin = User::factory()->create(['role' => 'administrator']);
+        User::factory()->create(['role' => 'customer']);
+
+        $response = $this->actingAs($admin)->get(route('dashboard'));
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('Dashboard')
+            ->has('usersLink')
+        );
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function admin_dashboard_includes_books_link(): void
+    {
+        $admin = User::factory()->create(['role' => 'administrator']);
+        Book::factory()->create(['title' => 'Test Book']);
+
+        $response = $this->actingAs($admin)->get(route('dashboard'));
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('Dashboard')
+            ->has('booksLink')
+        );
+    }
 }
+
 
