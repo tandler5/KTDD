@@ -33,6 +33,25 @@ class UserManagementTest extends TestCase
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
+    public function it_can_filter_users_by_email(): void
+    {
+        $admin = User::factory()->create(['role' => 'administrator']);
+        User::factory()->create(['name' => 'John Doe', 'email' => 'john@example.com']);
+        User::factory()->create(['name' => 'Jane Smith', 'email' => 'jane@example.com']);
+
+        $this->actingAs($admin);
+
+        $response = $this->get(route('users.index', ['search_email' => 'jane@example.com']));
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('Users/Index')
+            ->has('users.data', 1)
+            ->where('users.data.0.email', 'jane@example.com')
+        );
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
     public function it_can_filter_users_by_role()
     {
         $admin = User::factory()->create(['role' => 'administrator']);
