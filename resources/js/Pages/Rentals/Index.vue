@@ -85,31 +85,43 @@ watch([search_book, search_user, rented_from, rented_to, due_from, due_to, searc
                                             />
                                         </th>
                                         <th class="px-4 py-2">
-                                            <div class="flex flex-col space-y-1">
-                                                <input
-                                                    type="date"
-                                                    v-model="rented_from"
-                                                    class="w-full text-[10px] border-gray-300 rounded shadow-sm p-1"
-                                                />
-                                                <input
-                                                    type="date"
-                                                    v-model="rented_to"
-                                                    class="w-full text-[10px] border-gray-300 rounded shadow-sm p-1"
-                                                />
+                                            <div class="flex items-center space-x-1">
+                                                <div class="flex-1">
+                                                    <span class="text-[9px] uppercase text-gray-400 block">From</span>
+                                                    <input
+                                                        type="date"
+                                                        v-model="rented_from"
+                                                        class="w-full text-[10px] border-gray-300 rounded shadow-sm p-1"
+                                                    />
+                                                </div>
+                                                <div class="flex-1">
+                                                    <span class="text-[9px] uppercase text-gray-400 block">To</span>
+                                                    <input
+                                                        type="date"
+                                                        v-model="rented_to"
+                                                        class="w-full text-[10px] border-gray-300 rounded shadow-sm p-1"
+                                                    />
+                                                </div>
                                             </div>
                                         </th>
                                         <th class="px-4 py-2">
-                                            <div class="flex flex-col space-y-1">
-                                                <input
-                                                    type="date"
-                                                    v-model="due_from"
-                                                    class="w-full text-[10px] border-gray-300 rounded shadow-sm p-1"
-                                                />
-                                                <input
-                                                    type="date"
-                                                    v-model="due_to"
-                                                    class="w-full text-[10px] border-gray-300 rounded shadow-sm p-1"
-                                                />
+                                            <div class="flex items-center space-x-1">
+                                                <div class="flex-1">
+                                                    <span class="text-[9px] uppercase text-gray-400 block">From</span>
+                                                    <input
+                                                        type="date"
+                                                        v-model="due_from"
+                                                        class="w-full text-[10px] border-gray-300 rounded shadow-sm p-1"
+                                                    />
+                                                </div>
+                                                <div class="flex-1">
+                                                    <span class="text-[9px] uppercase text-gray-400 block">To</span>
+                                                    <input
+                                                        type="date"
+                                                        v-model="due_to"
+                                                        class="w-full text-[10px] border-gray-300 rounded shadow-sm p-1"
+                                                    />
+                                                </div>
                                             </div>
                                         </th>
                                         <th class="px-4 py-2">
