@@ -8,19 +8,45 @@ use Illuminate\Http\Request;
 
 class BookController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $books = Book::all()->map(function ($book) {
-            return [
+        $perPage = $request->input('per_page', 10);
+
+        $books = Book::query()
+            ->when($request->input('search_title'), function ($query, $search) {
+                $query->where('title', 'like', "%{$search}%");
+            })
+            ->when($request->input('search_author'), function ($query, $search) {
+                $query->where('author', 'like', "%{$search}%");
+            })
+            ->when($request->input('search_isbn'), function ($query, $search) {
+                $query->where('isbn', 'like', "%{$search}%");
+            })
+            ->when($request->input('search_status'), function ($query, $status) {
+                if ($status === 'available') {
+                    $query->whereDoesntHave('rentals', function ($q) {
+                        $q->whereNull('returned_at');
+                    });
+                } elseif ($status === 'rented') {
+                    $query->whereHas('rentals', function ($q) {
+                        $q->whereNull('returned_at');
+                    });
+                }
+            })
+            ->latest()
+            ->paginate($perPage)
+            ->withQueryString()
+            ->through(fn ($book) => [
                 'id' => $book->id,
                 'title' => $book->title,
                 'author' => $book->author,
+                'isbn' => $book->isbn,
                 'is_available' => $book->isAvailable(),
-            ];
-        });
+            ]);
 
         return Inertia::render('Books/Index', [
-            'books' => $books
+            'books' => $books,
+            'filters' => $request->only(['search_title', 'search_author', 'search_isbn', 'search_status', 'per_page']),
         ]);
     }
 

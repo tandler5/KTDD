@@ -32,6 +32,9 @@ describe('RentalIndex.vue Loading State', () => {
                     },
                     Pagination: true,
                     TextInput: true,
+                },
+                mocks: {
+                    route: () => '',
                 }
             }
         });

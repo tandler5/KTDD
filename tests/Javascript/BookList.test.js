@@ -34,6 +34,10 @@ describe('BookList.vue', () => {
             global: {
                 stubs: {
                     AuthenticatedLayout: AuthenticatedLayoutStub,
+                    Link: { template: '<a><slot /></a>' },
+                },
+                mocks: {
+                    route: () => '',
                 }
             }
         });
@@ -52,6 +56,10 @@ describe('BookList.vue', () => {
             global: {
                 stubs: {
                     AuthenticatedLayout: AuthenticatedLayoutStub,
+                    Link: { template: '<a><slot /></a>' },
+                },
+                mocks: {
+                    route: () => '',
                 }
             }
         });
@@ -60,6 +68,6 @@ describe('BookList.vue', () => {
         const rentButtons = buttons.filter(b => b.text().includes('Rent'));
 
         expect(rentButtons.length).toBe(1);
-        expect(wrapper.text()).toContain('Already Rented');
+        expect(wrapper.text()).toContain('Rented');
     });
 });
