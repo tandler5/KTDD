@@ -2,8 +2,10 @@ name: CI/CD
 
 on:
   push:
-    branches: ["trunk"]
-    tags: ["v*"]
+    branches:
+      - trunk
+      - release/dev
+      - release/prod
   pull_request:
     branches: ["trunk"]
 
@@ -65,7 +67,7 @@ jobs:
           DB_DATABASE: ktdd_test
           DB_USERNAME: root
           DB_PASSWORD: password
-        run: php artisan test --log-junit junit.xml --coverage-text --coverage-clover=coverage.xml
+        run: php artisan test --log-junit junit.xml --coverage-text --coverage-clover=coverage.xml --coverage-html=coverage-html
 
       - name: Run Vitest
         run: npx vitest run
@@ -83,10 +85,13 @@ jobs:
           path: |
             coverage.xml
             junit.xml
+            coverage-html/index.html
+            coverage-html/**
 
   build-and-push:
     runs-on: ubuntu-latest
     needs: tests
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/release/dev' || github.ref == 'refs/heads/release/prod')
     outputs:
       image: ${{ steps.meta.outputs.tags }}
 
@@ -100,8 +105,8 @@ jobs:
           images: ghcr.io/${{ github.repository }}
           tags: |
             type=sha
-            type=raw,value=staging,enable=${{ github.ref == 'refs/heads/trunk' }}
-            type=raw,value=production,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+            type=raw,value=staging,enable=${{ github.ref == 'refs/heads/release/dev' }}
+            type=raw,value=production,enable=${{ github.ref == 'refs/heads/release/prod' }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -126,7 +131,7 @@ jobs:
   deploy-staging:
     runs-on: ubuntu-latest
     needs: build-and-push
-    if: github.event_name == 'push' && github.ref == 'refs/heads/trunk'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/release/dev'
     environment: staging
 
     steps:
@@ -184,7 +189,7 @@ jobs:
   deploy-production:
     runs-on: ubuntu-latest
     needs: build-and-push
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name == 'push' && github.ref == 'refs/heads/release/prod'
     environment: production
 
     steps:
