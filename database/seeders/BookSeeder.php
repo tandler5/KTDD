@@ -12,34 +12,36 @@ class BookSeeder extends Seeder
      */
     public function run(): void
     {
-        Book::create([
-            'title' => 'The Great Gatsby',
-            'author' => 'F. Scott Fitzgerald',
-            'isbn' => '9780743273565'
-        ]);
+        $books = [
+            [
+                'title' => 'The Great Gatsby',
+                'author' => 'F. Scott Fitzgerald',
+                'isbn' => '9780743273565'
+            ],
+            [
+                'title' => '1984',
+                'author' => 'George Orwell',
+                'isbn' => '9780451524935'
+            ],
+            [
+                'title' => 'To Kill a Mockingbird',
+                'author' => 'Harper Lee',
+                'isbn' => '9780061120084'
+            ],
+            [
+                'title' => 'The Catcher in the Rye',
+                'author' => 'J.D. Salinger',
+                'isbn' => '9780316769488'
+            ],
+            [
+                'title' => 'The Hobbit',
+                'author' => 'J.R.R. Tolkien',
+                'isbn' => '9780547928227'
+            ],
+        ];
 
-        Book::create([
-            'title' => '1984',
-            'author' => 'George Orwell',
-            'isbn' => '9780451524935'
-        ]);
-
-        Book::create([
-            'title' => 'To Kill a Mockingbird',
-            'author' => 'Harper Lee',
-            'isbn' => '9780061120084'
-        ]);
-
-        Book::create([
-            'title' => 'The Catcher in the Rye',
-            'author' => 'J.D. Salinger',
-            'isbn' => '9780316769488'
-        ]);
-
-        Book::create([
-            'title' => 'The Hobbit',
-            'author' => 'J.R.R. Tolkien',
-            'isbn' => '9780547928227'
-        ]);
+        foreach ($books as $book) {
+            Book::updateOrCreate(['isbn' => $book['isbn']], $book);
+        }
     }
 }
