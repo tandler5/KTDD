@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed ,onMounted} from 'vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
@@ -9,10 +9,16 @@ import Toast from '@/Components/Toast.vue';
 import { Link, usePage } from '@inertiajs/vue3';
 
 const showingNavigationDropdown = ref(false);
+console.log('AuthenticatedLayout SCRIPT SETUP');
 const page = usePage();
 
 const isBooksActive = computed(() => {
+    console.log('Computing isBooksActive, URL:', page.url);
     return route().current('books.*') || page.component.startsWith('Books/') || page.url.startsWith('/books');
+});
+
+onMounted(() => {
+    console.log('AuthenticatedLayout mounted, URL:', page.url);
 });
 
 const isUsersActive = computed(() => {
