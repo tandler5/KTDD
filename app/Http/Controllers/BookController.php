@@ -52,7 +52,19 @@ class BookController extends Controller
 
     public function show(Book $book)
     {
-        $book->load(['rentals.user', 'currentRental.user']);
+        $book->load(['currentRental.user']);
+
+        $rentals = $book->rentals()
+            ->with('user')
+            ->latest()
+            ->paginate(10)
+            ->through(fn ($rental) => [
+                'id' => $rental->id,
+                'user_id' => $rental->user_id,
+                'user_name' => $rental->user->name,
+                'rented_at' => $rental->rented_at,
+                'returned_at' => $rental->returned_at,
+            ]);
 
         return Inertia::render('Books/Show', [
             'book' => [
@@ -66,14 +78,8 @@ class BookController extends Controller
                     'rented_at' => $book->currentRental->rented_at,
                     'due_date' => $book->currentRental->due_date,
                 ] : null,
-                'history' => $book->rentals->map(function ($rental) {
-                    return [
-                        'user_name' => $rental->user->name,
-                        'rented_at' => $rental->rented_at,
-                        'returned_at' => $rental->returned_at,
-                    ];
-                }),
-            ]
+            ],
+            'rentals' => $rentals,
         ]);
     }
 

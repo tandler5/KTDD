@@ -1,9 +1,11 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import Pagination from '@/Components/Pagination.vue';
 import { Head, Link } from '@inertiajs/vue3';
 
 defineProps({
-    book: Object
+    book: Object,
+    rentals: Object,
 });
 
 const formatDate = (date) => {
@@ -54,28 +56,38 @@ const formatDate = (date) => {
                     <!-- History Card -->
                     <div class="md:col-span-2 bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
                         <h3 class="text-lg font-bold mb-4">Rental History</h3>
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead>
-                                <tr>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">User</th>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Rented</th>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Returned</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200">
-                                <tr v-for="(history, index) in book.history" :key="index">
-                                    <td class="px-4 py-3 text-sm">{{ history.user_name }}</td>
-                                    <td class="px-4 py-3 text-sm">{{ formatDate(history.rented_at) }}</td>
-                                    <td class="px-4 py-3 text-sm">
-                                        <span v-if="history.returned_at">{{ formatDate(history.returned_at) }}</span>
-                                        <span v-else class="text-blue-500 font-bold italic">Currently Active</span>
-                                    </td>
-                                </tr>
-                                <tr v-if="book.history.length === 0">
-                                    <td colspan="3" class="px-4 py-10 text-center text-gray-400">No history yet.</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead>
+                                    <tr>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">User</th>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Rented</th>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Returned</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    <tr v-for="rental in rentals.data" :key="rental.id" class="hover:bg-gray-50 transition">
+                                        <td class="px-4 py-3 text-sm">
+                                            <Link :href="route('users.show', rental.user_id)" class="text-blue-600 hover:underline font-medium">
+                                                {{ rental.user_name }}
+                                            </Link>
+                                        </td>
+                                        <td class="px-4 py-3 text-sm text-gray-500">{{ formatDate(rental.rented_at) }}</td>
+                                        <td class="px-4 py-3 text-sm">
+                                            <span v-if="rental.returned_at" class="text-gray-500">{{ formatDate(rental.returned_at) }}</span>
+                                            <span v-else class="text-blue-500 font-bold italic">Active</span>
+                                        </td>
+                                    </tr>
+                                    <tr v-if="rentals.data.length === 0">
+                                        <td colspan="3" class="px-4 py-10 text-center text-gray-400">No history yet.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="mt-6">
+                            <Pagination :links="rentals.links" />
+                        </div>
                     </div>
                 </div>
             </div>

@@ -37,7 +37,19 @@ class UserController extends Controller
 
     public function show(User $user)
     {
-        $user->load(['rentals.book', 'activeRentals.book']);
+        $user->load(['activeRentals.book']);
+
+        $rentals = $user->rentals()
+            ->with('book')
+            ->latest()
+            ->paginate(10)
+            ->through(fn ($rental) => [
+                'id' => $rental->id,
+                'book_id' => $rental->book_id,
+                'book_title' => $rental->book->title,
+                'rented_at' => $rental->rented_at,
+                'returned_at' => $rental->returned_at,
+            ]);
 
         return Inertia::render('Users/Show', [
             'user' => [
@@ -50,13 +62,8 @@ class UserController extends Controller
                     'rented_at' => $rental->rented_at,
                     'due_date' => $rental->due_date,
                 ]),
-                'history' => $user->rentals->map(fn ($rental) => [
-                    'id' => $rental->id,
-                    'book_title' => $rental->book->title,
-                    'rented_at' => $rental->rented_at,
-                    'returned_at' => $rental->returned_at,
-                ]),
-            ]
+            ],
+            'rentals' => $rentals,
         ]);
     }
 }

@@ -1,9 +1,11 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import Pagination from '@/Components/Pagination.vue';
 import { Head, Link } from '@inertiajs/vue3';
 
 defineProps({
-    user: Object
+    user: Object,
+    rentals: Object,
 });
 
 const formatDate = (date) => {
@@ -72,19 +74,27 @@ const formatDate = (date) => {
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-200">
-                                    <tr v-for="history in user.history" :key="history.id" class="hover:bg-gray-50 transition">
-                                        <td class="px-4 py-3 text-sm font-medium">{{ history.book_title }}</td>
-                                        <td class="px-4 py-3 text-sm text-gray-500">{{ formatDate(history.rented_at) }}</td>
+                                    <tr v-for="rental in rentals.data" :key="rental.id" class="hover:bg-gray-50 transition">
+                                        <td class="px-4 py-3 text-sm font-medium">
+                                            <Link :href="route('books.show', rental.book_id)" class="text-blue-600 hover:underline font-medium">
+                                                {{ rental.book_title }}
+                                            </Link>
+                                        </td>
+                                        <td class="px-4 py-3 text-sm text-gray-500">{{ formatDate(rental.rented_at) }}</td>
                                         <td class="px-4 py-3 text-sm">
-                                            <span v-if="history.returned_at" class="text-gray-500">{{ formatDate(history.returned_at) }}</span>
+                                            <span v-if="rental.returned_at" class="text-gray-500">{{ formatDate(rental.returned_at) }}</span>
                                             <span v-else class="text-blue-500 font-bold italic">Active</span>
                                         </td>
                                     </tr>
-                                    <tr v-if="user.history.length === 0">
+                                    <tr v-if="rentals.data.length === 0">
                                         <td colspan="3" class="px-4 py-10 text-center text-gray-400">This user has no history.</td>
                                     </tr>
                                 </tbody>
                             </table>
+                        </div>
+
+                        <div class="mt-6">
+                            <Pagination :links="rentals.links" />
                         </div>
                     </div>
                 </div>
