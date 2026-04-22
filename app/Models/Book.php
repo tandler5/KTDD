@@ -14,4 +14,14 @@ class Book extends Model
         'author',
         'isbn',
     ];
+
+    public function rentals()
+    {
+        return $this->hasMany(Rental::class);
+    }
+
+    public function isAvailable(): bool
+    {
+        return !$this->rentals()->whereNull('returned_at')->exists();
+    }
 }

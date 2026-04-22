@@ -12,5 +12,6 @@ class Rental extends Model
         'user_id',
         'rented_at',
         'due_date',
+        'returned_at',
     ];
 }

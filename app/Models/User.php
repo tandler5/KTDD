@@ -45,4 +45,26 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function rentals()
+    {
+        return $this->hasMany(Rental::class);
+    }
+
+    public function activeRentals()
+    {
+        return $this->rentals()->whereNull('returned_at');
+    }
+
+    public function hasOverdueRentals(): bool
+    {
+        return $this->activeRentals()
+            ->where('due_date', '<', now())
+            ->exists();
+    }
+
+    public function canRentMoreBooks(): bool
+    {
+        return $this->activeRentals()->count() < 3 && !$this->hasOverdueRentals();
+    }
 }
