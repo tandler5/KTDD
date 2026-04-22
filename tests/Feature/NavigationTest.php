@@ -1,0 +1,37 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\User;
+use App\Models\Book;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+class NavigationTest extends TestCase
+{
+    use RefreshDatabase;
+
+    public function test_book_detail_route_has_correct_name_for_wildcard_matching()
+    {
+        $user = User::factory()->create();
+        $book = Book::factory()->create();
+
+        $response = $this->actingAs($user)->get(route('books.show', $book));
+
+        $response->assertStatus(200);
+        $this->assertEquals('books.show', request()->route()->getName());
+        $this->assertStringStartsWith('books.', request()->route()->getName());
+    }
+
+    public function test_user_detail_route_has_correct_name_for_wildcard_matching()
+    {
+        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
+
+        $response = $this->actingAs($user)->get(route('users.show', $otherUser));
+
+        $response->assertStatus(200);
+        $this->assertEquals('users.show', request()->route()->getName());
+        $this->assertStringStartsWith('users.', request()->route()->getName());
+    }
+}
