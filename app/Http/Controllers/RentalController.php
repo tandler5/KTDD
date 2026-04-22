@@ -21,6 +21,8 @@ class RentalController extends Controller
 
     public function index(Request $request)
     {
+        $perPage = $request->input('per_page', 10);
+
         $rentals = Rental::with(['book', 'user'])
             ->when($request->input('search_book'), function ($query, $search) {
                 $query->whereHas('book', function ($q) use ($search) {
@@ -33,7 +35,7 @@ class RentalController extends Controller
                 });
             })
             ->latest()
-            ->paginate(10)
+            ->paginate($perPage)
             ->withQueryString()
             ->through(fn ($rental) => [
                 'id' => $rental->id,
@@ -47,7 +49,7 @@ class RentalController extends Controller
 
         return Inertia::render('Rentals/Index', [
             'rentals' => $rentals,
-            'filters' => $request->only(['search_book', 'search_user']),
+            'filters' => $request->only(['search_book', 'search_user', 'per_page']),
         ]);
     }
 

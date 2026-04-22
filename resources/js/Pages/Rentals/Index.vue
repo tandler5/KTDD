@@ -11,18 +11,20 @@ const props = defineProps({
     filters: Object,
 });
 
-const search_book = ref(props.filters.search_book);
-const search_user = ref(props.filters.search_user);
+const search_book = ref(props.filters.search_book || '');
+const search_user = ref(props.filters.search_user || '');
+const per_page = ref(props.filters.per_page || 10);
 
 const formatDate = (date) => {
     if (!date) return '-';
     return new Date(date).toLocaleDateString();
 };
 
-watch([search_book, search_user], debounce(() => {
+watch([search_book, search_user, per_page], debounce(() => {
     router.get(route('rentals.index'), {
         search_book: search_book.value,
-        search_user: search_user.value
+        search_user: search_user.value,
+        per_page: per_page.value
     }, {
         preserveState: true,
         replace: true
@@ -35,29 +37,26 @@ watch([search_book, search_user], debounce(() => {
 
     <AuthenticatedLayout>
         <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">All Rentals</h2>
+            <div class="flex justify-between items-center">
+                <h2 class="font-semibold text-xl text-gray-800 leading-tight">All Rentals</h2>
+
+                <div class="flex items-center space-x-2">
+                    <span class="text-sm text-gray-600">Per page:</span>
+                    <select
+                        v-model="per_page"
+                        class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    >
+                        <option :value="5">5</option>
+                        <option :value="10">10</option>
+                        <option :value="25">25</option>
+                        <option :value="50">50</option>
+                    </select>
+                </div>
+            </div>
         </template>
 
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                <!-- Filters -->
-                <div class="mb-6 flex gap-4">
-                    <div class="flex-1">
-                        <TextInput
-                            v-model="search_book"
-                            placeholder="Filter by book title..."
-                            class="w-full"
-                        />
-                    </div>
-                    <div class="flex-1">
-                        <TextInput
-                            v-model="search_user"
-                            placeholder="Filter by user name..."
-                            class="w-full"
-                        />
-                    </div>
-                </div>
-
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6">
                         <table class="min-w-full divide-y divide-gray-200">
@@ -68,6 +67,25 @@ watch([search_book, search_user], debounce(() => {
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rented</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Due Date</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                </tr>
+                                <tr class="bg-gray-100">
+                                    <th class="px-4 py-2">
+                                        <TextInput
+                                            v-model="search_book"
+                                            placeholder="Filter book..."
+                                            class="w-full text-xs"
+                                        />
+                                    </th>
+                                    <th class="px-4 py-2">
+                                        <TextInput
+                                            v-model="search_user"
+                                            placeholder="Filter user..."
+                                            class="w-full text-xs"
+                                        />
+                                    </th>
+                                    <th class="px-4 py-2"></th>
+                                    <th class="px-4 py-2"></th>
+                                    <th class="px-4 py-2"></th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
