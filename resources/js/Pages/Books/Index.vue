@@ -11,6 +11,7 @@ import debounce from 'lodash/debounce';
 const props = defineProps({
     books: Object,
     filters: Object,
+    canCreate: Boolean,
 });
 
 const search_title = ref(props.filters.search_title || '');
@@ -62,7 +63,7 @@ watch([search_title, search_author, search_isbn, search_status, per_page], debou
         <template #header>
             <div class="flex justify-between items-center">
                 <h2 class="font-semibold text-xl text-gray-800 leading-tight">Book Management</h2>
-                <Link :href="route('books.create')">
+                <Link v-if="canCreate" :href="route('books.create')">
                     <PrimaryButton>Add New Book</PrimaryButton>
                 </Link>
             </div>

@@ -13,17 +13,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/', DashboardController::class)->name('dashboard');
 
     Route::get('/books', [BookController::class, 'index'])->name('books.index');
-    Route::get('/books/create', [BookController::class, 'create'])->name('books.create');
-    Route::post('/books', [BookController::class, 'store'])->name('books.store');
-    Route::get('/books/{book}', [BookController::class, 'show'])->name('books.show');
 
     Route::middleware('administrator')->group(function () {
+        Route::get('/books/create', [BookController::class, 'create'])->name('books.create');
+        Route::post('/books', [BookController::class, 'store'])->name('books.store');
+
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
         Route::get('/users/{user}', [UserController::class, 'show'])->name('users.show');
         Route::patch('/users/{user}/role', [UserController::class, 'updateRole'])->name('users.update-role');
 
         Route::get('/rentals', [RentalController::class, 'index'])->name('rentals.index');
     });
+
+    Route::get('/books/{book}', [BookController::class, 'show'])->name('books.show');
 
     Route::post('/rentals', [RentalController::class, 'store'])->name('rentals.store');
     Route::post('/rentals/return', [RentalController::class, 'returnBook'])->name('rentals.return');

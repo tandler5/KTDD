@@ -47,6 +47,7 @@ class BookController extends Controller
         return Inertia::render('Books/Index', [
             'books' => $books,
             'filters' => $request->only(['search_title', 'search_author', 'search_isbn', 'search_status', 'per_page']),
+            'canCreate' => $request->user()?->isAdmin() ?? false,
         ]);
     }
 
