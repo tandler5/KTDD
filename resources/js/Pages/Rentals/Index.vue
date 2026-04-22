@@ -37,22 +37,7 @@ watch([search_book, search_user, per_page], debounce(() => {
 
     <AuthenticatedLayout>
         <template #header>
-            <div class="flex justify-between items-center">
-                <h2 class="font-semibold text-xl text-gray-800 leading-tight">All Rentals</h2>
-
-                <div class="flex items-center space-x-2">
-                    <span class="text-sm text-gray-600">Per page:</span>
-                    <select
-                        v-model="per_page"
-                        class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                    >
-                        <option :value="5">5</option>
-                        <option :value="10">10</option>
-                        <option :value="25">25</option>
-                        <option :value="50">50</option>
-                    </select>
-                </div>
-            </div>
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">All Rentals</h2>
         </template>
 
         <div class="py-12">
@@ -108,8 +93,27 @@ watch([search_book, search_user, per_page], debounce(() => {
                             </tbody>
                         </table>
 
-                        <div class="mt-6">
-                            <Pagination :links="rentals.links" />
+                        <div class="mt-6 flex items-center justify-between">
+                            <div class="text-sm text-gray-700">
+                                Showing {{ rentals.from }} to {{ rentals.to }} of {{ rentals.total }} entries
+                            </div>
+
+                            <div class="flex items-center space-x-4">
+                                <Pagination :links="rentals.links" />
+
+                                <div class="flex items-center space-x-2 border-l pl-4 border-gray-200">
+                                    <span class="text-xs text-gray-500 uppercase font-semibold">Per page</span>
+                                    <select
+                                        v-model="per_page"
+                                        class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs py-1"
+                                    >
+                                        <option :value="5">5</option>
+                                        <option :value="10">10</option>
+                                        <option :value="25">25</option>
+                                        <option :value="50">50</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
