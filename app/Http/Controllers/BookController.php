@@ -62,6 +62,18 @@ class BookController extends Controller
                     $q->where('name', 'like', "%{$search}%");
                 });
             })
+            ->when($request->input('rented_from'), function ($query, $date) {
+                $query->whereDate('rented_at', '>=', $date);
+            })
+            ->when($request->input('rented_to'), function ($query, $date) {
+                $query->whereDate('rented_at', '<=', $date);
+            })
+            ->when($request->input('returned_from'), function ($query, $date) {
+                $query->whereDate('returned_at', '>=', $date);
+            })
+            ->when($request->input('returned_to'), function ($query, $date) {
+                $query->whereDate('returned_at', '<=', $date);
+            })
             ->latest()
             ->paginate($perPage)
             ->withQueryString()
@@ -87,7 +99,7 @@ class BookController extends Controller
                 ] : null,
             ],
             'rentals' => $rentals,
-            'filters' => $request->only(['search_user', 'per_page']),
+            'filters' => $request->only(['search_user', 'rented_from', 'rented_to', 'returned_from', 'returned_to', 'per_page']),
         ]);
     }
 

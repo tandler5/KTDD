@@ -13,6 +13,10 @@ const props = defineProps({
 });
 
 const search_book = ref(props.filters.search_book || '');
+const rented_from = ref(props.filters.rented_from || '');
+const rented_to = ref(props.filters.rented_to || '');
+const returned_from = ref(props.filters.returned_from || '');
+const returned_to = ref(props.filters.returned_to || '');
 const per_page = ref(props.filters.per_page || 10);
 const loading = ref(false);
 
@@ -24,9 +28,13 @@ const formatDate = (date) => {
 router.on('start', () => (loading.value = true));
 router.on('finish', () => (loading.value = false));
 
-watch([search_book, per_page], debounce(() => {
+watch([search_book, rented_from, rented_to, returned_from, returned_to, per_page], debounce(() => {
     router.get(route('users.show', props.user.id), {
         search_book: search_book.value,
+        rented_from: rented_from.value,
+        rented_to: rented_to.value,
+        returned_from: returned_from.value,
+        returned_to: returned_to.value,
         per_page: per_page.value
     }, {
         preserveState: true,
@@ -108,8 +116,30 @@ watch([search_book, per_page], debounce(() => {
                                                 class="w-full text-xs"
                                             />
                                         </th>
-                                        <th></th>
-                                        <th></th>
+                                        <th class="px-4 py-1">
+                                            <div class="flex items-center space-x-1">
+                                                <div class="flex-1">
+                                                    <span class="text-[9px] uppercase text-gray-400 block">From</span>
+                                                    <input type="date" v-model="rented_from" class="w-full text-[10px] border-gray-300 rounded shadow-sm p-1" />
+                                                </div>
+                                                <div class="flex-1">
+                                                    <span class="text-[9px] uppercase text-gray-400 block">To</span>
+                                                    <input type="date" v-model="rented_to" class="w-full text-[10px] border-gray-300 rounded shadow-sm p-1" />
+                                                </div>
+                                            </div>
+                                        </th>
+                                        <th class="px-4 py-1">
+                                            <div class="flex items-center space-x-1">
+                                                <div class="flex-1">
+                                                    <span class="text-[9px] uppercase text-gray-400 block">From</span>
+                                                    <input type="date" v-model="returned_from" class="w-full text-[10px] border-gray-300 rounded shadow-sm p-1" />
+                                                </div>
+                                                <div class="flex-1">
+                                                    <span class="text-[9px] uppercase text-gray-400 block">To</span>
+                                                    <input type="date" v-model="returned_to" class="w-full text-[10px] border-gray-300 rounded shadow-sm p-1" />
+                                                </div>
+                                            </div>
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-200">

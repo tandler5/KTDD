@@ -37,6 +37,23 @@ class DetailPaginationTest extends TestCase
         // Test per_page
         $response = $this->get(route('books.show', [$book->id, 'per_page' => 50]));
         $response->assertInertia(fn (Assert $page) => $page->has('rentals.data', 15));
+
+        // Test rented date range filtering
+        $response = $this->get(route('books.show', [
+            $book->id,
+            'rented_from' => now()->subDay()->toDateString(),
+            'rented_to' => now()->addDay()->toDateString(),
+            'per_page' => 50
+        ]));
+        $response->assertInertia(fn (Assert $page) => $page->has('rentals.data', 15));
+
+        // Test returned date range filtering
+        $response = $this->get(route('books.show', [
+            $book->id,
+            'returned_from' => now()->subDay()->toDateString(),
+            'returned_to' => now()->addDay()->toDateString()
+        ]));
+        $response->assertInertia(fn (Assert $page) => $page->has('rentals.data', 0));
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
@@ -62,6 +79,15 @@ class DetailPaginationTest extends TestCase
 
         // Test per_page
         $response = $this->get(route('users.show', [$user->id, 'per_page' => 50]));
+        $response->assertInertia(fn (Assert $page) => $page->has('rentals.data', 15));
+
+        // Test rented date range filtering
+        $response = $this->get(route('users.show', [
+            $user->id,
+            'rented_from' => now()->subDay()->toDateString(),
+            'rented_to' => now()->addDay()->toDateString(),
+            'per_page' => 50
+        ]));
         $response->assertInertia(fn (Assert $page) => $page->has('rentals.data', 15));
     }
 }
