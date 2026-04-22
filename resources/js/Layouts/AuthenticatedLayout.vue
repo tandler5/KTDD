@@ -47,6 +47,12 @@ const showingNavigationDropdown = ref(false);
                                     Books
                                 </NavLink>
                                 <NavLink
+                                    :href="route('users.index')"
+                                    :active="route().current('users.index') || route().current('users.show')"
+                                >
+                                    Users
+                                </NavLink>
+                                <NavLink
                                     :href="route('rentals.index')"
                                     :active="route().current('rentals.index')"
                                 >
@@ -164,6 +170,12 @@ const showingNavigationDropdown = ref(false);
                             :active="route().current('books.index')"
                         >
                             Books
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('users.index')"
+                            :active="route().current('users.index')"
+                        >
+                            Users
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
                             :href="route('rentals.index')"
