@@ -27,6 +27,6 @@ class Book extends Model
 
     public function isAvailable(): bool
     {
-        return !$this->rentals()->whereNull('returned_at')->exists();
+        return ! $this->rentals()->whereNull('returned_at')->exists();
     }
 }

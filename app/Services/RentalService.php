@@ -3,8 +3,8 @@
 namespace App\Services;
 
 use App\Models\Book;
-use App\Models\User;
 use App\Models\Rental;
+use App\Models\User;
 use Exception;
 
 class RentalService
@@ -26,11 +26,11 @@ class RentalService
             return $existingRental;
         }
 
-        if (!$book->isAvailable()) {
+        if (! $book->isAvailable()) {
             throw new Exception('Book is already rented');
         }
 
-        if (!$user->canRentMoreBooks()) {
+        if (! $user->canRentMoreBooks()) {
             throw new Exception('User cannot rent more books');
         }
 
@@ -51,7 +51,7 @@ class RentalService
     {
         $activeRental = $book->rentals()->whereNull('returned_at')->first();
 
-        if (!$activeRental) {
+        if (! $activeRental) {
             throw new Exception('Book is not currently rented');
         }
 

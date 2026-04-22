@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Rental;
 use App\Models\Book;
+use App\Models\Rental;
 use App\Models\User;
 use App\Services\RentalService;
-use Inertia\Inertia;
-use Illuminate\Http\Request;
 use Exception;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class RentalController extends Controller
 {
@@ -94,7 +94,7 @@ class RentalController extends Controller
                 ? User::findOrFail($validated['user_id'])
                 : auth()->user();
 
-            if (!$user) {
+            if (! $user) {
                 throw new Exception('User not authenticated');
             }
             $book = Book::findOrFail($validated['book_id']);

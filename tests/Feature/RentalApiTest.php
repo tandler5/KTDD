@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\Book;
-use App\Models\Rental;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -32,10 +31,10 @@ class RentalApiTest extends TestCase
         $response = $this->postJson('/api/rentals', $payload);
 
         $response->assertStatus(201)
-                 ->assertJsonFragment([
-                     'book_id' => $book->id,
-                     'user_id' => $user->id,
-                 ]);
+            ->assertJsonFragment([
+                'book_id' => $book->id,
+                'user_id' => $user->id,
+            ]);
 
         $this->assertDatabaseHas('rentals', [
             'book_id' => $book->id,
@@ -67,7 +66,7 @@ class RentalApiTest extends TestCase
         ]);
 
         $response->assertStatus(422)
-                 ->assertJsonFragment(['message' => 'Book is already rented']);
+            ->assertJsonFragment(['message' => 'Book is already rented']);
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
@@ -88,7 +87,7 @@ class RentalApiTest extends TestCase
         ]);
 
         $response->assertStatus(200)
-                 ->assertJson(['message' => 'Book returned successfully']);
+            ->assertJson(['message' => 'Book returned successfully']);
 
         $this->assertTrue($book->fresh()->isAvailable());
     }

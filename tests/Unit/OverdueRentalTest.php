@@ -3,10 +3,9 @@
 namespace Tests\Unit;
 
 use App\Models\Book;
-use App\Models\User;
 use App\Models\Rental;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 class OverdueRentalTest extends TestCase

@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\Book;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -86,4 +85,3 @@ class BookCreateAuthorizationTest extends TestCase
         );
     }
 }
-

@@ -16,13 +16,13 @@ class BookStoreTest extends TestCase
         $admin = User::factory()->create(['role' => 'administrator']);
 
         Book::factory()->create([
-            'isbn' => '9780743273565'
+            'isbn' => '9780743273565',
         ]);
 
         $response = $this->actingAs($admin)->post(route('books.store'), [
             'title' => 'New Book',
             'author' => 'Author Name',
-            'isbn' => '9780743273565'
+            'isbn' => '9780743273565',
         ]);
 
         $response->assertSessionHasErrors('isbn');

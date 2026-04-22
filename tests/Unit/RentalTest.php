@@ -7,7 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class RentalTest extends TestCase
-{    
+{
     use RefreshDatabase;
 
     #[\PHPUnit\Framework\Attributes\Test]

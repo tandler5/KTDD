@@ -3,12 +3,12 @@
 namespace Tests\Unit;
 
 use App\Models\Book;
-use App\Models\User;
 use App\Models\Rental;
+use App\Models\User;
 use App\Services\RentalService;
+use Exception;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
-use Exception;
 
 class RentalServiceTest extends TestCase
 {
@@ -19,7 +19,7 @@ class RentalServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new RentalService();
+        $this->service = new RentalService;
     }
 
     #[\PHPUnit\Framework\Attributes\Test]

@@ -81,4 +81,3 @@ class AdminAccessTest extends TestCase
         );
     }
 }
-

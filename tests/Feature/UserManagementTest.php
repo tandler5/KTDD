@@ -6,8 +6,8 @@ use App\Models\Book;
 use App\Models\Rental;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 use Inertia\Testing\AssertableInertia as Assert;
+use Tests\TestCase;
 
 class UserManagementTest extends TestCase
 {
@@ -64,7 +64,7 @@ class UserManagementTest extends TestCase
         $this->actingAs($admin);
 
         $response = $this->patch(route('users.update-role', $user), [
-            'role' => 'administrator'
+            'role' => 'administrator',
         ]);
 
         $response->assertRedirect();
@@ -80,7 +80,7 @@ class UserManagementTest extends TestCase
         $this->actingAs($user1);
 
         $response = $this->patch(route('users.update-role', $user2), [
-            'role' => 'administrator'
+            'role' => 'administrator',
         ]);
 
         $response->assertStatus(403);
@@ -122,7 +122,7 @@ class UserManagementTest extends TestCase
         $this->actingAs($admin);
 
         $response = $this->patch(route('users.update-role', $admin), [
-            'role' => 'customer'
+            'role' => 'customer',
         ]);
 
         $response->assertStatus(403);

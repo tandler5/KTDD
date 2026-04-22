@@ -17,4 +17,3 @@ class EnsureUserIsAdministrator
         return $next($request);
     }
 }
-

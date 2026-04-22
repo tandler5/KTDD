@@ -6,8 +6,8 @@ use App\Models\Book;
 use App\Models\Rental;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 use Inertia\Testing\AssertableInertia as Assert;
+use Tests\TestCase;
 
 class DetailPaginationTest extends TestCase
 {
@@ -44,7 +44,7 @@ class DetailPaginationTest extends TestCase
             $book->id,
             'rented_from' => now()->subDay()->toDateString(),
             'rented_to' => now()->addDay()->toDateString(),
-            'per_page' => 50
+            'per_page' => 50,
         ]));
         $response->assertInertia(fn (Assert $page) => $page->has('rentals.data', 15));
 
@@ -52,7 +52,7 @@ class DetailPaginationTest extends TestCase
         $response = $this->get(route('books.show', [
             $book->id,
             'returned_from' => now()->subDay()->toDateString(),
-            'returned_to' => now()->addDay()->toDateString()
+            'returned_to' => now()->addDay()->toDateString(),
         ]));
         $response->assertInertia(fn (Assert $page) => $page->has('rentals.data', 0));
     }
@@ -106,7 +106,7 @@ class DetailPaginationTest extends TestCase
             $user->id,
             'rented_from' => now()->subDay()->toDateString(),
             'rented_to' => now()->addDay()->toDateString(),
-            'per_page' => 50
+            'per_page' => 50,
         ]));
         $response->assertInertia(fn (Assert $page) => $page->has('rentals.data', 15));
     }
