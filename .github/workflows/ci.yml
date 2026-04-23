@@ -103,11 +103,10 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}
+          images: ghcr.io/tandler5/ktdd
           tags: |
             type=sha
-            type=raw,value=staging,enable=${{ github.ref == 'refs/heads/release/dev' }}
-            type=raw,value=production,enable=${{ github.ref == 'refs/heads/release/prod' }}
+            type=raw,value=latest,enable=true
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -180,7 +179,7 @@ jobs:
         if: steps.guard.outputs.can_deploy == 'true'
         run: |
           kubectl apply -k k8s/overlays/staging
-          kubectl set image deployment/ktdd-app app=ghcr.io/${{ github.repository }}:staging -n ktdd-staging
+          kubectl set image deployment/ktdd-app app=ghcr.io/tandler5/ktdd:staging -n ktdd-staging
           kubectl rollout status deployment/ktdd-app -n ktdd-staging --timeout=120s
 
       - name: Skip staging deploy
@@ -238,7 +237,7 @@ jobs:
         if: steps.guard.outputs.can_deploy == 'true'
         run: |
           kubectl apply -k k8s/overlays/production
-          kubectl set image deployment/ktdd-app app=ghcr.io/${{ github.repository }}:production -n ktdd-production
+          kubectl set image deployment/ktdd-app app=ghcr.io/tandler5/ktdd:production -n ktdd-production
           kubectl rollout status deployment/ktdd-app -n ktdd-production --timeout=120s
 
       - name: Skip production deploy
