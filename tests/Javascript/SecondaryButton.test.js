@@ -1,53 +1,53 @@
-import { mount } from '@vue/test-utils';
-import SecondaryButton from '@/Components/SecondaryButton.vue';
-import { describe, it, expect } from 'vitest';
+import { mount } from "@vue/test-utils";
+import SecondaryButton from "@/Components/SecondaryButton.vue";
+import { describe, it, expect } from "vitest";
 
-describe('SecondaryButton.vue', () => {
-    it('renders a button element', () => {
+describe("SecondaryButton.vue", () => {
+    it("renders a button element", () => {
         const wrapper = mount(SecondaryButton, {
             slots: {
-                default: 'Cancel',
+                default: "Cancel",
             },
         });
-        
-        const button = wrapper.find('button');
+
+        const button = wrapper.find("button");
         expect(button.exists()).toBe(true);
     });
 
-    it('displays slot content', () => {
+    it("displays slot content", () => {
         const wrapper = mount(SecondaryButton, {
             slots: {
-                default: 'Cancel Operation',
+                default: "Cancel Operation",
             },
         });
-        
-        expect(wrapper.text()).toBe('Cancel Operation');
+
+        expect(wrapper.text()).toBe("Cancel Operation");
     });
 
-    it('applies correct secondary button CSS classes', () => {
+    it("applies correct secondary button CSS classes", () => {
         const wrapper = mount(SecondaryButton);
-        
-        const button = wrapper.find('button');
-        expect(button.classes()).toContain('bg-white');
-        expect(button.classes()).toContain('border-gray-300');
-        expect(button.classes()).toContain('text-gray-700');
+
+        const button = wrapper.find("button");
+        expect(button.classes()).toContain("bg-white");
+        expect(button.classes()).toContain("border-gray-300");
+        expect(button.classes()).toContain("text-gray-700");
     });
 
-    it('supports type prop (button, submit, reset)', async () => {
+    it("supports type prop (button, submit, reset)", async () => {
         const wrapper = mount(SecondaryButton, {
             props: {
-                type: 'submit',
+                type: "submit",
             },
         });
-        
-        const button = wrapper.find('button');
-        expect(button.attributes('type')).toBe('submit');
+
+        const button = wrapper.find("button");
+        expect(button.attributes("type")).toBe("submit");
     });
 
-    it('defaults to button type', () => {
+    it("defaults to button type", () => {
         const wrapper = mount(SecondaryButton);
-        
-        const button = wrapper.find('button');
-        expect(button.attributes('type')).toBe('button');
+
+        const button = wrapper.find("button");
+        expect(button.attributes("type")).toBe("button");
     });
 });
