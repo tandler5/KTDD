@@ -16,7 +16,7 @@ Hlavní business pravidla:
 2. Knihu nelze půjčit, pokud má aktivní výpůjčku jiný uživatel.
 3. Uživatel s výpůjčkou po termínu nemůže půjčovat další knihy.
 4. Vracet lze jen aktuálně půjčenou knihu.
-5. Půjčení stejné knihy stejným uživatelem je idempotentní (nevzniká duplicitní aktivní záznam).
+5. Když si stejný uživatel půjčí stejnou knihu znovu, nevytvoří se druhé stejné aktivní půjčení.
 
 ## 2) Architektura
 
